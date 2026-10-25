@@ -127,6 +127,10 @@ const SummaryApi = {
         url : '/api/product/get-offers',
         method : 'get'
     },
+    getHomeFeed : {
+        url : '/api/product/home-feed',
+        method : 'get'
+    },
     addTocart: {
         url: "/api/cart/create",
         method: "post"
