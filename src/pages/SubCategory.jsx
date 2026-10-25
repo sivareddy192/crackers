@@ -1,0 +1,219 @@
+import React, { useEffect, useState } from 'react';
+import UploadSubCategory from '../components/UploadSubCategory';
+import AxiosToastError from '../utils/AxiosToastError';
+import Axios from '../utils/Axios';
+import SummaryApi from '../common/SummaryApi';
+import DisplayTable from '../components/DisplayTable';
+import { createColumnHelper } from '@tanstack/react-table';
+import ViewImage from '../components/ViewImage';
+import { MdDelete } from "react-icons/md";
+import { HiPencil } from "react-icons/hi";
+import EditSubCategory from '../components/EditSubCategory';
+import ConfirmBox from '../components/ConfirmBox';
+import toast from 'react-hot-toast';
+import { getImageUrl } from '../utils/getImageUrl';
+import Loading from '../components/Loading';
+
+const SubCategoryPage = () => {
+
+  const [openAddSubCategory, setOpenAddSubCategory] = useState(false);
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const columnHelper = createColumnHelper();
+  const [ImageURL, setImageURL] = useState("");
+  const [openEdit, setOpenEdit] = useState(false);
+  const [editData, setEditData] = useState({ _id: "" });
+  const [deleteSubCategory, setDeleteSubCategory] = useState({ _id: "" });
+  const [openDeleteConfirmBox, setOpenDeleteConfirmBox] = useState(false);
+  
+
+  //Fetch all subcategories
+  const fetchSubCategory = async () => {
+    try {
+      setLoading(true);
+      const response = await Axios({
+        ...SummaryApi.getSubCategory
+      }); 
+
+      const { data: responseData } = response;
+      
+
+      if (responseData.success) {
+        setData(responseData.data);
+      }
+    } catch (error) {
+      AxiosToastError(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchSubCategory();
+  }, []);
+
+  // Table Columns
+  const column = [
+    columnHelper.accessor('name', {
+      header: "Name"
+    }),
+
+    columnHelper.accessor('image', {
+      header: "Image",
+      cell: ({ row }) => (
+        <div className='flex justify-center items-center'>
+          <img
+            src={getImageUrl(row.original.image)}
+            alt={row.original.name}
+            className='w-8 h-8 cursor-pointer rounded-md'
+            onClick={() => setImageURL(getImageUrl(row.original.image))}
+          />
+
+        </div>
+      )
+    }),
+
+    columnHelper.accessor("category", {
+      header: "Category",
+      cell: ({ row }) => {
+        const categories = row.original.category;
+        if (Array.isArray(categories) && categories.length > 0 && typeof categories[0] === "object") {
+          return categories.map((c, i) => (
+            <p key={i} className='shadow px-2 py-1 inline-block rounded bg-gray-100 m-1'>
+              {c?.name || "Unknown"}
+            </p>
+          ));
+        }
+
+        if (Array.isArray(categories)) {
+          return categories.map((id, i) => (
+            <p key={i} className='text-gray-500 italic'>
+              ID: {id}
+            </p>
+          ));
+        }
+
+        return <p className='text-gray-400 italic'>No category</p>;
+      }
+    }),
+
+    columnHelper.accessor("_id", {
+      header: "Action",
+      cell: ({ row }) => (
+        <div className='flex justify-center gap-3'>
+
+          {/*Edit Button */}
+          <button
+            onClick={() => {
+              setOpenEdit(true);
+              setEditData(row.original);
+            }}
+            className='p-2 bg-green-100 rounded-full hover:text-green-600'
+          >
+            <HiPencil size={20} />
+          </button>
+
+          {/*Delete Button */}
+          <button
+            onClick={() => {
+              setOpenDeleteConfirmBox(true);
+              setDeleteSubCategory(row.original);
+            }}
+            className='p-2 bg-red-100 rounded-full text-red-500 hover:text-red-600'
+          >
+            <MdDelete size={20} />
+          </button>
+        </div>
+      )
+    })
+  ];
+  
+
+  // Handle Delete Subcategory
+  const handleDeleteSubCategory = async () => {
+    try {
+      const response = await Axios({
+        ...SummaryApi.deleteSubCategory,
+        data: deleteSubCategory
+      });
+
+      const { data: responseData } = response;
+
+      if (responseData.success) {
+        toast.success(responseData.message);
+        fetchSubCategory();
+        setOpenDeleteConfirmBox(false);
+        setDeleteSubCategory({ _id: "" });
+      }
+    } catch (error) {
+      AxiosToastError(error);
+    }
+  };
+
+  
+
+  return (
+    <section>
+      <div className='p-4 bg-white shadow-md flex justify-between items-center'>
+        <button
+          onClick={() => setOpenAddSubCategory(true)}
+          className='text-sm border-2 font-black uppercase tracking-widest border-gray-900 hover:bg-gray-900 hover:text-white text-gray-900 px-6 py-2.5 rounded-xl transition-all active:scale-95'
+        >
+          Add Sub Category
+        </button>
+        <h2 className='font-black text-xl text-gray-900 uppercase tracking-tighter'>Sub Category</h2>
+      </div>
+
+      <div className='p-4 min-h-[70vh] flex flex-col'>
+        {loading ? (
+            <Loading type="table" />
+        ) : (
+            <div className='overflow-auto w-full max-w-[95vw]'>
+                <DisplayTable
+                    data={data}
+                    column={column}
+                    loading={loading}
+                />
+            </div>
+        )}
+      </div>
+
+      {/*Add Subcategory Modal */}
+      {openAddSubCategory && (
+        <UploadSubCategory
+          close={() => setOpenAddSubCategory(false)}
+          fetchData={fetchSubCategory}
+        />
+      )}
+
+      {/* Image Viewer */}
+      {ImageURL && (
+        <ViewImage
+          url={getImageUrl(ImageURL)}
+          close={() => setImageURL("")}
+        />
+      )}
+
+
+      {/* Edit Subcategory */}
+      {openEdit && (
+        <EditSubCategory
+          data={editData}
+          close={() => setOpenEdit(false)}
+          fetchData={fetchSubCategory}
+        />
+      )}
+
+      {/* Delete Confirmation */}
+      {openDeleteConfirmBox && (
+        <ConfirmBox
+          cancel={() => setOpenDeleteConfirmBox(false)}
+          close={() => setOpenDeleteConfirmBox(false)}
+          confirm={handleDeleteSubCategory}
+        />
+      )}
+    </section>
+  );
+};
+
+export default SubCategoryPage;
