@@ -1,3 +1,5 @@
+import { baseURL } from "../common/SummaryApi";
+
 export const getImageUrl = (image) => {
     if (!image) return "/placeholder.png";
 
@@ -20,7 +22,7 @@ export const getImageUrl = (image) => {
 
     // If it's a relative path, prepend the API base URL
     if (!url.startsWith("http") && !url.startsWith("data:")) {
-        const base = import.meta.env.VITE_BASE_URL || import.meta.env.VITE_API_URL || "";
+        const base = baseURL || "";
         url = url.startsWith("/") ? `${base}${url}` : `${base}/${url}`;
         
         // Ensure the constructed URL is also HTTPS if the base was HTTP

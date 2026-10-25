@@ -1,5 +1,11 @@
-export const baseURL = import.meta.env.CONFIG_URL || "http://localhost:8000";
-// export const baseURL = "http://localhost:8080"
+const rawBaseURL =
+    import.meta.env.VITE_API_URL ||
+    import.meta.env.VITE_BASE_URL ||
+    import.meta.env.VITE_CONFIG_URL ||
+    import.meta.env.CONFIG_URL ||
+    "http://localhost:8088";
+
+export const baseURL = rawBaseURL ? rawBaseURL.trim().replace(/\/+$/, "") : "";
 const SummaryApi = {
     register : {
         url : 'api/user/register',

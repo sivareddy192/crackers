@@ -66,20 +66,23 @@ const Home = () => {
   }, [categoryData])
 
   useEffect(() => {
+    let isMounted = true
     const fetchCampaigns = async () => {
       try {
-        const [couponRes, festivalRes] = await Promise.all([
+        const [couponRes, festivalRes] = await Promise.allSettled([
           Axios(SummaryApi.coupon_list),
           Axios(SummaryApi.festivalOffer.get)
         ])
 
-        if (couponRes.data?.success) {
-          const welcome = couponRes.data.coupons?.find(c => c.isFirstOrderOnly && c.isActive)
+        if (!isMounted) return
+
+        if (couponRes.status === "fulfilled" && couponRes.value?.data?.success) {
+          const welcome = couponRes.value.data.coupons?.find(c => c.isFirstOrderOnly && c.isActive)
           setWelcomeCoupon(welcome || null)
         }
 
-        if (festivalRes.data?.success) {
-          const activeFestivals = festivalRes.data.data?.filter(o => o.isActive) || []
+        if (festivalRes.status === "fulfilled" && festivalRes.value?.data?.success) {
+          const activeFestivals = festivalRes.value.data.data?.filter(o => o.isActive) || []
           setFestivalOffers(activeFestivals)
         }
       } catch (error) {
@@ -88,6 +91,9 @@ const Home = () => {
     }
 
     fetchCampaigns()
+    return () => {
+      isMounted = false
+    }
   }, [])
 
   const filteredProducts = (() => {
