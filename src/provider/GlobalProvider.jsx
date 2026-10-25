@@ -250,17 +250,23 @@ const GlobalProvider = ({ children }) => {
 
   // ✅ INITIAL LOAD
   useEffect(() => {
-    if (!user?._id) {
+    const hasToken = Boolean(localStorage.getItem('accessToken'));
+
+    // Only clear state if definitely unauthenticated (no token and no user)
+    if (!user?._id && !hasToken) {
       dispatch(clearCartItem());
       dispatch(clearAddress());
       dispatch(clearOrder());
       return;
     }
 
-    fetchCartItem();
-    fetchAddress();
-    fetchOrder();
-  }, [user]);
+    // Immediately fetch cart, address, and orders without waiting
+    if (user?._id || hasToken) {
+      fetchCartItem();
+      fetchAddress();
+      fetchOrder();
+    }
+  }, [user?._id]);
 
   // 🔥🔥🔥 NEW: LISTEN FOR CART UPDATE EVENT
   useEffect(() => {

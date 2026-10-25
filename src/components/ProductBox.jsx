@@ -50,6 +50,12 @@ const ProductBox = ({ data, catalog = false }) => {
     <div className={`fire-product-card group relative h-full ${catalog ? "w-full min-w-0" : "w-40 shrink-0 md:w-48 lg:w-56"}`}>
       <Link
         to={url}
+        state={{ product: data }}
+        onClick={() => {
+          try {
+            sessionStorage.setItem(`trace_p_${data._id}`, JSON.stringify(data));
+          } catch(e){}
+        }}
         className={`fire-product-surface flex flex-col bg-white h-full transition-all duration-300 border border-slate-200/70 hover:border-indigo-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-indigo-500/10 relative overflow-hidden ${catalog ? "rounded-xl p-2 sm:p-3" : "rounded-3xl p-3 lg:p-4"}`}
       >
         {/* Image Container */}

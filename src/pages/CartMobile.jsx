@@ -47,8 +47,8 @@ const CartMobile = () => {
   const [selectedIds, setSelectedIds] = useState([])
   const [couponCode, setCouponCode] = useState("")
   const [availableCoupons, setAvailableCoupons] = useState([])
-  const [recommendations, setRecommendations] = useState([])
-  const [loadingRecommendations, setLoadingRecommendations] = useState(true)
+  const [allRecommended, setAllRecommended] = useState([])
+  const [loadingRecommendations, setLoadingRecommendations] = useState(false)
   const [loadingCoupon, setLoadingCoupon] = useState(false)
   const [removingSelected, setRemovingSelected] = useState(false)
   const [showDeliveryBanner, setShowDeliveryBanner] = useState(true)
@@ -83,23 +83,24 @@ const CartMobile = () => {
         ...SummaryApi.searchProduct,
         data: { page: 1, limit: 12, sort: "featured" }
       })
-      if (!response.data.success) {
-        throw new Error(response.data.message || "Could not load recommendations")
+      if (response.data?.success && Array.isArray(response.data?.data)) {
+        setAllRecommended(response.data.data)
       }
-      const cartProductIds = new Set(validItems.map(item => item.productId?._id))
-      setRecommendations(
-        (response.data.data || []).filter(product => !cartProductIds.has(product._id)).slice(0, 8)
-      )
     } catch (error) {
-      AxiosToastError(error)
+      // Quiet fail so cart experience is never affected
     } finally {
       setLoadingRecommendations(false)
     }
-  }, [validItems])
+  }, [])
 
   useEffect(() => {
     fetchRecommendations()
   }, [fetchRecommendations])
+
+  const recommendations = useMemo(() => {
+    const cartProductIds = new Set(validItems.map(item => item.productId?._id))
+    return allRecommended.filter(product => !cartProductIds.has(product._id)).slice(0, 8)
+  }, [allRecommended, validItems])
 
   useEffect(() => {
     let active = true

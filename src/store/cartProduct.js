@@ -1,7 +1,30 @@
 import { createSlice } from "@reduxjs/toolkit";
 
+const getCachedCart = () => {
+    try {
+        const token = localStorage.getItem('accessToken');
+        if (!token) return [];
+        const cached = localStorage.getItem('cached_cart_items');
+        if (!cached) return [];
+        const parsed = JSON.parse(cached);
+        return Array.isArray(parsed) ? parsed : [];
+    } catch {
+        return [];
+    }
+};
+
+const saveCachedCart = (cart) => {
+    try {
+        if (Array.isArray(cart) && cart.length > 0) {
+            localStorage.setItem('cached_cart_items', JSON.stringify(cart));
+        } else {
+            localStorage.removeItem('cached_cart_items');
+        }
+    } catch (e) {}
+};
+
 const initialState = {
-    cart : []
+    cart : getCachedCart()
 }
 
 const cartSlice = createSlice({
@@ -9,20 +32,27 @@ const cartSlice = createSlice({
     initialState : initialState,
     reducers : {
         handleAddItemCart : (state,action)=>{
-           state.cart = [...action.payload]
+            const nextCart = Array.isArray(action.payload) ? [...action.payload] : [];
+            state.cart = nextCart;
+            saveCachedCart(nextCart);
         },
         updateCartItemQtyOptimistic : (state,action)=>{
             const { _id, qty } = action.payload;
             const index = state.cart.findIndex(item => item._id === _id);
             if(index !== -1){
                 state.cart[index] = { ...state.cart[index], quantity : qty };
+                saveCachedCart(state.cart);
             }
         },
         addCartItemOptimistic : (state,action)=>{
             state.cart.push(action.payload);
+            saveCachedCart(state.cart);
         },
         clearCartItem : (state)=>{
-            state.cart = []
+            state.cart = [];
+            try {
+                localStorage.removeItem('cached_cart_items');
+            } catch (e) {}
         }
     }
 })

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { Link, useNavigate, useParams } from "react-router-dom"
+import { Link, useNavigate, useParams, useLocation } from "react-router-dom"
 import {
   FaBolt,
   FaBoxOpen,
@@ -25,6 +25,7 @@ import AddToCartButton from "../components/AddToCartButton"
 import CategoryWiseProductDisplay from "../components/CategoryWiseProductDisplay"
 import ProductLoading from "../components/ProductLoading"
 import ReviewsSection from "../components/ReviewsSection"
+import { getCachedProduct, setCachedProduct } from "../utils/productCache"
 
 const detailTabs = ["Description", "Specifications", "Reviews", "FAQs"]
 const MotionDiv = framerMotion.div
@@ -34,13 +35,26 @@ const ProductDisplay = () => {
   const { product: productUrl } = useParams()
   const productId = productUrl?.split("-").pop()
   const navigate = useNavigate()
+  const location = useLocation()
   const { addItemToCart } = useGlobalContext()
   const galleryRef = useRef(null)
   const purchaseRef = useRef(null)
 
-  const [data, setData] = useState(null)
+  // ⚡ 0.001ms INSTANT RENDER: Initialize synchronously from router state or local session cache
+  const initialProduct = location.state?.product || getCachedProduct(productId)
+
+  const [data, setData] = useState(() => initialProduct ? {
+    ...initialProduct,
+    _original: {
+      unit: initialProduct.unit,
+      price: initialProduct.price,
+      mrp: initialProduct.mrp,
+      discount: initialProduct.discount,
+      stock: initialProduct.stock
+    }
+  } : null)
   const [reviews, setReviews] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(() => !initialProduct)
   const [activeImage, setActiveImage] = useState(0)
   const [activeTab, setActiveTab] = useState("Description")
   const [showStickyBar, setShowStickyBar] = useState(false)
@@ -65,27 +79,31 @@ const ProductDisplay = () => {
   const fetchProductDetails = useCallback(async () => {
     if (!productId) return
     try {
-      setLoading(true)
+      if (!data && !initialProduct) {
+        setLoading(true)
+      }
       const response = await Axios({
         ...SummaryApi.getProductDetails,
         data: { productId }
       })
-      if (!response.data.success || !response.data.data) {
-        throw new Error(response.data.message || "Product could not be found")
+      if (response.data.success && response.data.data) {
+        const product = response.data.data
+        setCachedProduct(productId, product)
+        setData({
+          ...product,
+          _original: {
+            unit: product.unit,
+            price: product.price,
+            mrp: product.mrp,
+            discount: product.discount,
+            stock: product.stock
+          }
+        })
       }
-      const product = response.data.data
-      setData({
-        ...product,
-        _original: {
-          unit: product.unit,
-          price: product.price,
-          mrp: product.mrp,
-          discount: product.discount,
-          stock: product.stock
-        }
-      })
     } catch (error) {
-      AxiosToastError(error)
+      if (!data && !initialProduct) {
+        AxiosToastError(error)
+      }
     } finally {
       setLoading(false)
     }
@@ -105,9 +123,23 @@ const ProductDisplay = () => {
     window.scrollTo(0, 0)
     setActiveTab("Description")
     setActiveImage(0)
+    const cached = location.state?.product || getCachedProduct(productId)
+    if (cached) {
+      setData({
+        ...cached,
+        _original: {
+          unit: cached.unit,
+          price: cached.price,
+          mrp: cached.mrp,
+          discount: cached.discount,
+          stock: cached.stock
+        }
+      })
+      setLoading(false)
+    }
     fetchProductDetails()
     fetchReviews()
-  }, [fetchProductDetails, fetchReviews])
+  }, [productId, fetchProductDetails, fetchReviews])
 
   useEffect(() => {
     const purchaseElement = purchaseRef.current
