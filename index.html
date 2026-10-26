@@ -32,14 +32,37 @@
     <link rel="dns-prefetch" href="https://res.cloudinary.com" />
     <link rel="preconnect" href="https://crackersbackend.vercel.app" crossorigin />
     <link rel="dns-prefetch" href="https://crackersbackend.vercel.app" />
-    <!-- LCP hero: tell browser to fetch the first banner image immediately -->
-    <!-- NOTE: Replace this URL with your actual first banner Cloudinary URL after first backend fetch -->
-    <link rel="preload" as="image" fetchpriority="high"
-      href="https://res.cloudinary.com/tracly/image/upload/f_auto,q_auto:good,c_limit,w_480/banners/banner-1.jpg"
-      imagesrcset="https://res.cloudinary.com/tracly/image/upload/f_auto,q_auto:good,c_limit,w_360/banners/banner-1.jpg 360w,
-                   https://res.cloudinary.com/tracly/image/upload/f_auto,q_auto:good,c_limit,w_480/banners/banner-1.jpg 480w,
-                   https://res.cloudinary.com/tracly/image/upload/f_auto,q_auto:good,c_limit,w_720/banners/banner-1.jpg 720w"
-      imagesizes="100vw" />
+
+    <!-- LCP Banner Image Preload — dynamically injected from localStorage cache.
+         BannerDisplay.jsx saves the real first banner URL after first API fetch.
+         On repeat visits this gives instant LCP. On first visit, the inline
+         hero h1 text is the LCP element (already paints at ~0.8s).             -->
+    <script>
+      (function() {
+        try {
+          var cached = localStorage.getItem('tracly_lcp_banner');
+          if (cached) {
+            var data = JSON.parse(cached);
+            var url = data.url;
+            if (url && url.startsWith('https://res.cloudinary.com')) {
+              var link = document.createElement('link');
+              link.rel = 'preload';
+              link.as = 'image';
+              link.setAttribute('fetchpriority', 'high');
+              link.href = url;
+              // Build responsive srcset from the cached URL pattern
+              var srcset = url.replace(/,w_\d+/, ',w_360') + ' 360w, ' +
+                           url.replace(/,w_\d+/, ',w_480') + ' 480w, ' +
+                           url.replace(/,w_\d+/, ',w_720') + ' 720w';
+              link.setAttribute('imagesrcset', srcset);
+              link.setAttribute('imagesizes', '100vw');
+              document.head.appendChild(link);
+            }
+          }
+        } catch(e) { /* ignore storage errors */ }
+      })();
+    </script>
+
 
     <!-- Non-render-blocking Google Fonts with print/media swap -->
     <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&family=Outfit:wght@700;800&display=swap" />
@@ -163,15 +186,20 @@
       </header>
       <div class="critical-shell-hero">
         <div class="critical-shell-banner">
-          <p style="font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:0.18em;color:#ea580c;margin:0 0 8px 0;">
-            Crackers &amp; fireworks for celebrations
+          <p style="font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:0.18em;color:#ea580c;margin:0 0 10px 0;">
+            🎆 Crackers &amp; fireworks for celebrations
           </p>
-          <h1 style="font-size:clamp(22px, 5vw, 42px);font-weight:900;line-height:1.1;color:#0f172a;margin:0 0 10px 0;">
+          <!-- Largest element on first paint — Chrome LCP candidate -->
+          <h1 id="shell-hero-heading" style="font-size:clamp(28px,6vw,52px);font-weight:900;line-height:1.08;color:#0f172a;margin:0 0 12px 0;letter-spacing:-0.02em;">
             Celebrate together.<br><span style="color:#ea580c;">Celebrate safely.</span>
           </h1>
-          <p style="font-size:13px;color:#475569;margin:0;max-width:440px;">
-            Explore crackers and fireworks for special occasions with door-step delivery.
+          <p style="font-size:14px;color:#475569;margin:0 0 20px 0;max-width:440px;line-height:1.5;">
+            Shop premium crackers &amp; fireworks online with safe doorstep delivery across India.
           </p>
+          <a href="/products"
+             style="display:inline-flex;align-items:center;gap:8px;background:#ea580c;color:#fff;padding:11px 22px;border-radius:999px;font-size:13px;font-weight:800;text-decoration:none;box-shadow:0 4px 14px rgba(234,88,12,0.3);">
+            Shop products <span aria-hidden="true">→</span>
+          </a>
         </div>
       </div>
     </div>

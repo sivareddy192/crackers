@@ -22,6 +22,19 @@ const BannerDisplay = ({ banners = [] }) => {
         if (banners.length > 0) {
             try {
                 sessionStorage.setItem('tracly_cached_banners', JSON.stringify(banners.slice(0, 3)))
+
+                // Save the first banner's mobile image URL to localStorage so the inline
+                // script in index.html can inject a <link rel="preload"> on next page load,
+                // enabling near-instant LCP on repeat visits.
+                const firstBanner = banners[0]
+                const firstMobileImage = firstBanner?.imageMobile || firstBanner?.imageDesktop
+                if (firstMobileImage) {
+                    // Use the getImageUrl transform for the width used in <img src={}>
+                    const lcpUrl = getImageUrl(firstMobileImage, { width: 480, quality: 70 })
+                    if (lcpUrl && lcpUrl.startsWith('https://res.cloudinary.com')) {
+                        localStorage.setItem('tracly_lcp_banner', JSON.stringify({ url: lcpUrl, ts: Date.now() }))
+                    }
+                }
             } catch {
                 // Ignore storage quota errors
             }
