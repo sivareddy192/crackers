@@ -9,7 +9,7 @@ const VerifyEmail = () => {
     const location = useLocation()
     const navigate = useNavigate()
     const [loading, setLoading] = useState(true)
-    const [status, setStatus] = useState('pending') // pending, success, error
+    const [status, setStatus] = useState('pending')
 
     const params = new URLSearchParams(location.search)
     const code = params.get('code')

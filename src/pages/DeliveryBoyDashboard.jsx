@@ -23,7 +23,6 @@ const DeliveryBoyDashboard = () => {
     const [verifying, setVerifying] = useState({})
     const [sendingOtp, setSendingOtp] = useState({})
     
-    // QR Scanner States
     const [showScanner, setShowScanner] = useState(false)
     const [scanning, setScanning] = useState(false)
 
@@ -64,7 +63,6 @@ const DeliveryBoyDashboard = () => {
         return () => clearInterval(interval)
     }, [])
 
-    // 🛰️ GPS Live Tracking
     useEffect(() => {
         if (!("geolocation" in navigator)) return;
 
@@ -79,7 +77,6 @@ const DeliveryBoyDashboard = () => {
                     }
                 });
             } catch (err) {
-                // Silent fail, common in background
             }
         }
 
@@ -128,7 +125,6 @@ const DeliveryBoyDashboard = () => {
             return
         }
 
-        // 🚀 OPTIMISTIC UPDATE: Update UI instantly
         const previousOrders = [...orders];
         setOrders(prev => prev.map(o => o._id === orderId ? { ...o, status } : o));
         
@@ -139,10 +135,8 @@ const DeliveryBoyDashboard = () => {
                 data: { orderId, status }
             })
             toast.success(`Updated to ${status}`)
-            // Re-fetch to ensure data is in sync
             fetchMyOrders()
         } catch (err) {
-            // Revert on failure
             setOrders(previousOrders);
             toast.error("Update failed")
         }
@@ -206,7 +200,6 @@ const DeliveryBoyDashboard = () => {
 
     return (
         <div className='min-h-screen bg-gray-50 pb-24'>
-            {/* MERN Integrated Scanner */}
             <AnimatePresence>
                 {showScanner && (
                     <QRScanner 
@@ -217,7 +210,6 @@ const DeliveryBoyDashboard = () => {
             </AnimatePresence>
 
 
-            {/* Header & Stats */}
             <div className='bg-white rounded-b-[2.5rem] shadow-sm p-6 lg:p-10 mb-6'>
                 <div className='max-w-5xl mx-auto'>
                     <div className='flex items-center justify-between mb-8'>
@@ -273,7 +265,6 @@ const DeliveryBoyDashboard = () => {
                         >
                             <div className='flex justify-between items-start mb-4'>
                                 <div className='flex gap-4'>
-                                    {/* Order Icon */}
                                     <div className='w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center border border-gray-100 flex-shrink-0'>
                                         <FaBox className='text-gray-200 text-2xl'/>
                                     </div>
@@ -322,7 +313,6 @@ const DeliveryBoyDashboard = () => {
                 </div>
             </div>
 
-            {/* FLOATING SCANNER BUTTON */}
             <button 
                 onClick={() => setShowScanner(true)}
                 className='fixed bottom-8 right-6 w-16 h-16 bg-gray-900 text-white rounded-3xl flex items-center justify-center shadow-2xl z-50 hover:scale-110 active:scale-95 transition-all'

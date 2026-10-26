@@ -1,4 +1,3 @@
-/*completed */
 import React, { useEffect, useRef, useState } from 'react'
 import toast from 'react-hot-toast';
 import Axios from '../utils/Axios';
@@ -17,14 +16,12 @@ const OtpVerification = () => {
     const inputRef = useRef([]);
     const location = useLocation();
 
-    // ---------------------- REDIRECT IF NO EMAIL ----------------------
     useEffect(() => {
         if (!location?.state?.email) {
             navigate("/forgot-password");
         }
     }, []);
 
-    // ---------------------- COUNTDOWN TIMER ----------------------
     useEffect(() => {
         if (timer === 0) {
             setCanResend(true);
@@ -40,7 +37,6 @@ const OtpVerification = () => {
 
     const valideValue = data.every(el => el);
 
-    // ---------------------- HANDLE CHANGE ----------------------
     const handleChange = (value, index) => {
         let newData = [...data];
 
@@ -59,7 +55,6 @@ const OtpVerification = () => {
         }
     };
 
-    // ---------------------- KEY HANDLING ----------------------
     const handleKeyDown = (e, index) => {
         const key = e.key;
 
@@ -76,7 +71,6 @@ const OtpVerification = () => {
         }
     };
 
-    // ---------------------- HANDLE PASTE ----------------------
     const handlePaste = (e) => {
         const pasted = e.clipboardData.getData("text").trim();
 
@@ -88,7 +82,6 @@ const OtpVerification = () => {
         e.preventDefault();
     };
 
-    // ---------------------- RESEND OTP ----------------------
     const handleResend = async () => {
         try {
             const res = await Axios({
@@ -104,7 +97,6 @@ const OtpVerification = () => {
         }
     };
 
-    // ---------------------- VERIFY OTP ----------------------
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -124,7 +116,6 @@ const OtpVerification = () => {
             if (response.data.error) {
                 toast.error(response.data.message);
 
-                // Shake animation
                 setShake(true);
                 setTimeout(() => setShake(false), 500);
 
@@ -194,7 +185,6 @@ const OtpVerification = () => {
                     </button>
                 </form>
 
-                {/* TIMER + RESEND */}
                 <div className='flex justify-between items-center py-2 text-xs'>
                     <p className='text-slate-500'>
                         {canResend ? "Didn't receive OTP?" : `Resend in ${timer}s`}
@@ -217,7 +207,6 @@ const OtpVerification = () => {
                 </p>
             </div>
 
-            {/* ANIMATIONS */}
             <style>{`
                 .animate-shake {
                     animation: shake 0.3s linear;

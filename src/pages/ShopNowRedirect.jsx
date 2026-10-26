@@ -7,14 +7,11 @@ const ShopNowRedirect = () => {
     const user = useSelector(state => state.user);
 
     useEffect(() => {
-        // Check for access token in localStorage or active user session in redux
         const token = localStorage.getItem('accessToken');
         
         if (token || user?._id) {
-            // User is active -> Redirect to account dashboard/profile
             navigate('/dashboard/profile', { replace: true });
         } else {
-            // User not active -> Redirect to login gate
             navigate('/login', { replace: true });
         }
     }, [user, navigate]);

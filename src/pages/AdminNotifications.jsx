@@ -28,7 +28,7 @@ const AdminNotifications = () => {
 
     useEffect(() => {
         fetchNotifications();
-        const interval = setInterval(fetchNotifications, 10000); // Poll every 10s
+        const interval = setInterval(fetchNotifications, 10000);
         return () => clearInterval(interval);
     }, [fetchNotifications]);
 
@@ -172,7 +172,6 @@ const AdminNotifications = () => {
                 )}
             </div>
 
-            {/* Notification Detail Modal */}
             <AnimatePresence>
                 {selectedNotif && (
                     <div className='fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm'>

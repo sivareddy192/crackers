@@ -253,19 +253,16 @@ const SummaryApi = {
     method: "get"
   },
 
-  // Create Coupon (Admin)
   coupon_create: {
     url: "/api/coupon/create",
     method: "post"
   },
 
-  // Update Coupon (Admin)
   coupon_update: (id) => ({
     url: `/api/coupon/update/${id}`,
     method: "put"
   }),
 
-  // Delete Coupon (Admin)
   coupon_delete: (id) => ({
     url: `/api/coupon/delete/${id}`,
     method: "delete"
@@ -276,9 +273,6 @@ const SummaryApi = {
     method: "post"
   },
 
-  /* ------------------------------------------
-      APPLY COUPON DURING CHECKOUT
-  ------------------------------------------- */
   coupon_apply: {
     url: "/api/coupon/apply",
     method: "post"

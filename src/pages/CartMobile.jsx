@@ -87,7 +87,6 @@ const CartMobile = () => {
         setAllRecommended(response.data.data)
       }
     } catch (error) {
-      // Quiet fail so cart experience is never affected
     } finally {
       setLoadingRecommendations(false)
     }

@@ -37,7 +37,6 @@ const AvatarEdit = ({ close }) => {
 
       const { data: responseData } = response
       
-      // Check nested data object first, then directly on responseData body
       let avatarUrl = null;
       if (responseData?.data?.avatar) {
         avatarUrl = responseData.data.avatar;

@@ -31,7 +31,6 @@ const GlobalProvider = ({ children }) => {
   const cartItem = useSelector((state) => state.cartItem.cart);
   const user = useSelector((state) => state?.user);
 
-  // ✅ FETCH USER
   const fetchUser = async () => {
     try {
       const response = await Axios({
@@ -46,7 +45,6 @@ const GlobalProvider = ({ children }) => {
     }
   };
 
-  // ✅ FETCH CART
   const fetchCartItem = async () => {
     try {
       const response = await Axios({
@@ -63,15 +61,13 @@ const GlobalProvider = ({ children }) => {
     }
   };
 
-  // ✅ ADD ITEM TO CART
   const addItemToCart = async (product) => {
       if(!product?._id) return;
       
-      // ⚡ 1. OPTIMISTIC RENDER: Create synthetic temporary cart item and push immediately!
       const tempId = "temp_" + Date.now();
       const syntheticItem = {
           _id: tempId,
-          productId: product, // Object containing details needed by components
+          productId: product,
           quantity: 1,
           unit: product.unit || ""
       };
@@ -89,20 +85,17 @@ const GlobalProvider = ({ children }) => {
 
           const { data: responseData } = response;
           
-          // Always refresh true state from DB once settled to finalize correct IDs
           fetchCartItem(); 
           
           return responseData;
       } catch (error) {
-          fetchCartItem(); // Revert synthetic UI on error by hard refresh
+          fetchCartItem();
           AxiosToastError(error);
           return error;
       }
   };
 
-  // ✅ UPDATE CART QTY
   const updateCartItem = async (id, qty) => {
-    // 🚀 OPTIMISTIC UI UPDATE: Push instantly so UI reacts in 1ms
     dispatch(updateCartItemQtyOptimistic({ _id: id, qty: qty }));
 
     try {
@@ -117,21 +110,17 @@ const GlobalProvider = ({ children }) => {
       const { data: responseData } = response;
 
       if (responseData.success) {
-        // No need to do an extra network hit fetchCartItem() anymore!
         return responseData;
       } else {
-          // If backend explicitly rejects (e.g., stock issue), revert to truth
           fetchCartItem();
       }
     } catch (error) {
-      // On network failure, revert UI
       fetchCartItem();
       AxiosToastError(error);
       return error;
     }
   };
 
-  // ✅ DELETE CART ITEM
   const deleteCartItem = async (cartId) => {
     try {
       const response = await Axios({
@@ -152,22 +141,17 @@ const GlobalProvider = ({ children }) => {
     }
   };
 
-  // ✅ CALCULATIONS
   useEffect(() => {
     if (!cartItem || !Array.isArray(cartItem)) return;
 
-    // Filter valid items once for all calculations
     const validItems = cartItem.filter(item => item?.productId);
 
-    // Total Quantity
     const qty = validItems.reduce((prev, curr) => prev + (curr.quantity || 0), 0);
     setTotalQty(qty);
 
-    // Subtotal (with product discount)
     const subtotal = validItems.reduce((prev, curr) => {
       let price = curr?.productId?.price || 0;
 
-      // If item is a variant, find its specific price/discount
       if (curr.unit && curr.unit !== curr.productId?.unit) {
         const variant = curr.productId?.variants?.find(v => v.unit === curr.unit);
         if (variant) {
@@ -179,7 +163,6 @@ const GlobalProvider = ({ children }) => {
     }, 0);
     setTotalPrice(subtotal);
 
-    // Total without any discount (for comparison)
     const originalPrice = validItems.reduce((prev, curr) => {
       let price = curr?.productId?.price || 0;
       let mrp = curr?.productId?.mrp || curr?.productId?.price || 0;
@@ -191,7 +174,6 @@ const GlobalProvider = ({ children }) => {
     }, 0);
     setNotDiscountTotalPrice(originalPrice);
 
-    // Charges logic
     if (qty > 0) {
       setDeliveryCharge(subtotal < 199 ? 30 : 0);
       setHandlingCharge(subtotal > 199 ? 9 : 0);
@@ -200,7 +182,6 @@ const GlobalProvider = ({ children }) => {
       setHandlingCharge(0);
     }
 
-    // Reset coupon if minAmount not met
     if (appliedCoupon && subtotal < (appliedCoupon.minAmount || 0)) {
         setAppliedCoupon(null);
         setCouponDiscount(0);
@@ -216,7 +197,6 @@ const GlobalProvider = ({ children }) => {
     }
   }, [cartItem, appliedCoupon]);
 
-  // ✅ FETCH ADDRESS
   const fetchAddress = async () => {
     try {
       const response = await Axios({
@@ -231,7 +211,6 @@ const GlobalProvider = ({ children }) => {
     } catch (error) {}
   };
 
-  // ✅ FETCH ORDERS
   const fetchOrder = async () => {
     try {
       const response = await Axios({
@@ -248,11 +227,9 @@ const GlobalProvider = ({ children }) => {
     }
   };
 
-  // ✅ INITIAL LOAD
   useEffect(() => {
     const hasToken = Boolean(localStorage.getItem('accessToken'));
 
-    // Only clear state if definitely unauthenticated (no token and no user)
     if (!user?._id && !hasToken) {
       dispatch(clearCartItem());
       dispatch(clearAddress());
@@ -260,7 +237,6 @@ const GlobalProvider = ({ children }) => {
       return;
     }
 
-    // Immediately fetch cart, address, and orders without waiting
     if (user?._id || hasToken) {
       fetchCartItem();
       fetchAddress();
@@ -268,7 +244,6 @@ const GlobalProvider = ({ children }) => {
     }
   }, [user?._id]);
 
-  // 🔥🔥🔥 NEW: LISTEN FOR CART UPDATE EVENT
   useEffect(() => {
     const handleCartUpdate = () => {
       fetchCartItem();

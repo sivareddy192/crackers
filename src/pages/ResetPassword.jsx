@@ -1,4 +1,3 @@
-/*completed */
 import React, { useEffect, useState } from 'react'
 import { FaRegEye, FaRegEyeSlash } from 'react-icons/fa6'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
@@ -44,9 +43,6 @@ const ResetPassword = () => {
   const strengthNames = ["Very Weak", "Weak", "Medium", "Strong"]
   const strengthColors = ["#ff0000", "#ff5e00", "#ffcc00", "#00c853"]
 
-  // ---------------------------
-  // HANDLE CHANGE
-  // ---------------------------
   const handleChange = (e) => {
     const { name, value } = e.target
 
@@ -55,9 +51,6 @@ const ResetPassword = () => {
       [name]: value
     }))
 
-    // ---------------------------
-    // Password strength validation
-    // ---------------------------
     if (name === "newPassword") {
       let score = 0
 
@@ -91,9 +84,6 @@ const ResetPassword = () => {
       }
     }
 
-    // ---------------------------
-    // Confirm password validation
-    // ---------------------------
     if (name === "confirmPassword") {
       if (!value) {
         setConfirmError("")
@@ -105,9 +95,6 @@ const ResetPassword = () => {
     }
   }
 
-  // ---------------------------
-  // SUBMIT FORM
-  // ---------------------------
   const handleSubmit = async (e) => {
     e.preventDefault()
 
@@ -153,7 +140,6 @@ const ResetPassword = () => {
 
         <form className='grid gap-4 py-4' onSubmit={handleSubmit}>
 
-          {/* New Password */}
           <div className='grid gap-1'>
             <label htmlFor='newPassword'>New Password :</label>
             <div className='bg-blue-50 p-2 border rounded flex items-center focus-within:border-primary-200'>
@@ -171,7 +157,6 @@ const ResetPassword = () => {
               </div>
             </div>
 
-            {/* Strength Meter */}
             {data.newPassword && (
               <>
                 <div className='w-full h-2 bg-gray-300 rounded'>
@@ -196,13 +181,11 @@ const ResetPassword = () => {
               </>
             )}
 
-            {/* Validation message */}
             {passwordError && (
               <p className='text-red-600 text-sm'>{passwordError}</p>
             )}
           </div>
 
-          {/* Confirm Password */}
           <div className='grid gap-1'>
             <label htmlFor='confirmPassword'>Confirm Password :</label>
             <div className='bg-blue-50 p-2 border rounded flex items-center focus-within:border-primary-200'>

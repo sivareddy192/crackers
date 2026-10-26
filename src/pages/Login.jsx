@@ -30,7 +30,6 @@ const Login = () => {
       [name]: value
     }))
 
-    // Password strength validation
     if (name === "password") {
       if (value.length < 8) {
         setPasswordError("Password must be at least 8 characters long.")
@@ -79,7 +78,6 @@ const Login = () => {
           password: "",
         })
 
-        // Role-based redirection
         if (userDetails.data.role === "ADMIN") {
           navigate("/dashboard/Admin-Orders")
         } else if (userDetails.data.role === "DELIVERY_BOY") {
@@ -99,7 +97,6 @@ const Login = () => {
   return (
     <section className='w-full min-h-[75vh] flex items-center justify-center container mx-auto px-4 py-8'>
       <div className='bg-white my-4 w-full max-w-md mx-auto rounded-3xl p-8 border border-slate-200/80 shadow-xl shadow-slate-900/5 transition-all'>
-        {/* Brand Header */}
         <div className='flex flex-col items-center text-center mb-6'>
           <img src={image} alt="Trace" className='w-32 h-auto mb-3' />
           <h2 className='text-2xl font-black text-slate-900 tracking-tight font-heading'>Welcome Back</h2>
@@ -107,7 +104,6 @@ const Login = () => {
         </div>
 
         <form className='grid gap-4' onSubmit={handleSubmit}>
-          {/* Email Field */}
           <div className='space-y-1.5'>
             <label htmlFor='email' className='text-xs font-bold text-slate-700'>Email Address</label>
             <div className='bg-slate-50/70 border border-slate-200 rounded-2xl flex items-center px-3.5 focus-within:bg-white focus-within:border-indigo-500 focus-within:ring-3 focus-within:ring-indigo-500/15 transition-all'>
@@ -125,7 +121,6 @@ const Login = () => {
             </div>
           </div>
 
-          {/* Password Field */}
           <div className='space-y-1.5'>
             <div className='flex items-center justify-between'>
               <label htmlFor='password' className='text-xs font-bold text-slate-700'>Password</label>
@@ -154,7 +149,6 @@ const Login = () => {
               </button>
             </div>
 
-            {/* Password strength feedback */}
             {passwordError ? (
               <p className='text-rose-500 text-[11px] font-semibold mt-1'>{passwordError}</p>
             ) : (
@@ -162,7 +156,6 @@ const Login = () => {
             )}
           </div>
 
-          {/* Submit Button */}
           <button
             disabled={!valideValue || loading}
             className={`w-full py-3.5 rounded-2xl font-extrabold text-xs uppercase tracking-wider transition-all active:scale-[0.98] shadow-md mt-2 ${

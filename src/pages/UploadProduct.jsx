@@ -245,7 +245,6 @@ const UploadProduct = () => {
         category: data.category.map((cat) => cat._id),
         subCategory: data.subCategory.map((sub) => sub._id),
         relatedProducts: data.relatedProducts.map((p) => p._id),
-        // Sync first variant to main product fields for backend validation
         unit: data.variants[0]?.unit,
         price: data.variants[0]?.price,
         mrp: data.variants[0]?.mrp,
@@ -295,7 +294,6 @@ const UploadProduct = () => {
 
       <div className="grid p-3">
         <form className="grid gap-4" onSubmit={handleSubmit}>
-          {/* Name */}
           <div className="grid gap-1">
             <label htmlFor="name" className="font-medium">
               Name
@@ -312,7 +310,6 @@ const UploadProduct = () => {
             />
           </div>
 
-          {/* Description */}
           <div className="grid gap-1">
             <label htmlFor="description" className="font-medium">
               Description
@@ -329,7 +326,6 @@ const UploadProduct = () => {
             />
           </div>
 
-          {/* Images */}
           <div>
             <p className="font-medium">Image</p>
             <label
@@ -355,7 +351,6 @@ const UploadProduct = () => {
               />
             </label>
 
-            {/* Show uploaded images */}
             <div className="flex flex-wrap gap-4 mt-2">
               {data.image.map((img, index) => (
                 <div
@@ -379,7 +374,6 @@ const UploadProduct = () => {
             </div>
           </div>
 
-          {/* Video */}
           <div className="grid gap-1">
             <p className="font-medium">Product Video</p>
             {!data.video ? (
@@ -428,7 +422,6 @@ const UploadProduct = () => {
             )}
           </div>
 
-          {/* Category */}
           <div className="grid gap-1">
             <label className="font-medium">Category</label>
             <select
@@ -474,7 +467,6 @@ const UploadProduct = () => {
             </div>
           </div>
 
-          {/* Sub Category */}
           <div className="grid gap-1">
             <label className="font-medium">Sub Category</label>
             <select
@@ -522,7 +514,6 @@ const UploadProduct = () => {
             </div>
           </div>
 
-          {/* Product Variants (Multi-Unit Support) */}
           <div className="grid gap-3 border p-4 rounded-xl bg-gray-50/50 border-gray-100">
             <div className="flex items-center justify-between">
               <label className="font-bold text-gray-800 uppercase text-xs tracking-widest">Product Units / Variants</label>
@@ -615,7 +606,6 @@ const UploadProduct = () => {
             </div>
           </div>
 
-          {/* Related Products */}
           <div className="grid gap-3 border p-4 rounded-xl bg-gray-50/50 border-gray-100">
             <label className="font-bold text-gray-800 uppercase text-xs tracking-widest">Related Products</label>
             <div className="relative">
@@ -669,7 +659,6 @@ const UploadProduct = () => {
           </div>
 
 
-          {/* Additional Fields */}
           {Object.keys(data.more_details).map((k, index) => (
             <div className="grid gap-1" key={index}>
               <label htmlFor={k} className="font-medium">
@@ -706,12 +695,10 @@ const UploadProduct = () => {
         </form>
       </div>
 
-      {/* View Image Modal */}
       {ViewImageURL && (
         <ViewImage url={getImageUrl(ViewImageURL)} close={() => setViewImageURL("")} />
       )}
 
-      {/* Add Field Modal */}
       {openAddField && (
         <AddFieldComponent
           value={fieldName}
@@ -720,7 +707,6 @@ const UploadProduct = () => {
           close={() => setOpenAddField(false)}
         />
       )}
-      {/* View Video Modal */}
       {viewVideoURL && (
         <ViewVideo url={getImageUrl(viewVideoURL)} close={() => setViewVideoURL("")} />
       )}

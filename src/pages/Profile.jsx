@@ -72,7 +72,6 @@ const Profile = () => {
             <h2 className='text-2xl font-black text-gray-900 mb-8 uppercase tracking-tighter'>Personal Details</h2>
 
             <div className='flex flex-col lg:flex-row gap-12 items-start'>
-                {/**profile upload and display image */}
                 <div className='flex flex-col items-center gap-4'>
                     <div className='w-40 h-40 bg-gray-50 flex items-center justify-center rounded-[2.5rem] overflow-hidden border-4 border-white shadow-xl'>
                         {
@@ -95,7 +94,6 @@ const Profile = () => {
                     </button>
                 </div>
                 
-                {/**name, mobile , email, change password */}
                 <form className='flex-1 grid gap-6 w-full' onSubmit={handleSubmit}>
                     <div className='grid gap-1.5'>
                         <label htmlFor='name' className='text-[10px] font-black text-gray-400 uppercase tracking-[2px] ml-1'>Full Name</label>

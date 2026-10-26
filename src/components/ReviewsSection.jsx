@@ -67,7 +67,6 @@ const ReviewsSection = ({ productId, reviews = [], setReviews, fetchReviews }) =
 
     return (
         <div className='space-y-12'>
-            {/* Rating Summary Header */}
             <div>
                 <h3 className='text-2xl font-black text-gray-900 mb-2'>Customer Reviews</h3>
                 <div className='flex items-center gap-4 mb-6'>
@@ -135,7 +134,6 @@ const ReviewsSection = ({ productId, reviews = [], setReviews, fetchReviews }) =
                             className='w-full bg-gray-50 border border-gray-100 rounded-2xl p-4 text-xs focus:bg-white focus:border-gray-900 outline-none h-24 resize-none transition-all'
                         />
 
-                        {/* Image Upload Area */}
                         <div className='flex flex-wrap gap-3'>
                             {reviewForm.image ? (
                                 <div className='relative w-20 h-20 rounded-xl overflow-hidden border border-gray-100 shadow-sm'>
@@ -183,7 +181,6 @@ const ReviewsSection = ({ productId, reviews = [], setReviews, fetchReviews }) =
                 )}
             </div>
 
-            {/* Recent Reviews List - Compact Small Box Style */}
             <div className='flex flex-col gap-3'>
                 {(reviews || []).length === 0 ? (
                     <div className='text-center py-12 bg-gray-50 rounded-[32px] border border-dashed border-gray-200'>
@@ -228,7 +225,6 @@ const ReviewsSection = ({ productId, reviews = [], setReviews, fetchReviews }) =
             </div>
 
 
-            {/* Show More/Less Button */}
             {(reviews || []).length > 2 && (
                 <div className='flex justify-center pt-4'>
                     <button 

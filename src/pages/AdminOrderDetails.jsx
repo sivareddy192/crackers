@@ -76,7 +76,6 @@ const AdminOrderDetails = () => {
 
     if (loading) return (
         <div className='min-h-screen bg-gray-50 pb-32 animate-pulse'>
-            {/* Header Skeleton */}
             <div className='bg-white px-6 lg:px-12 py-6 flex items-center justify-between border-b border-gray-100'>
                 <div className='flex items-center gap-6'>
                     <Skeleton className='w-12 h-12 rounded-2xl' />
@@ -90,7 +89,6 @@ const AdminOrderDetails = () => {
 
             <div className='p-6 lg:p-12 max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-10'>
                 <div className='lg:col-span-2 space-y-12'>
-                    {/* Shipping destination skeleton */}
                     <div className='bg-white rounded-[3rem] p-10 border border-gray-100 space-y-6 h-64 flex flex-col justify-between'>
                         <Skeleton className='h-4 w-40' />
                         <div className='grid grid-cols-2 gap-6'>
@@ -98,14 +96,12 @@ const AdminOrderDetails = () => {
                             <Skeleton className='h-8 w-full' />
                         </div>
                     </div>
-                    {/* Items list skeleton */}
                     <div className='space-y-4'>
                         <Skeleton className='h-5 w-32' />
                         <Skeleton className='h-20 w-full rounded-2xl' />
                         <Skeleton className='h-20 w-full rounded-2xl' />
                     </div>
                 </div>
-                {/* Actions sidebar skeleton */}
                 <div className='bg-white rounded-[3rem] p-10 border border-gray-100 h-96 flex flex-col justify-between'>
                     <Skeleton className='h-5 w-40' />
                     <div className='space-y-4'>
@@ -121,7 +117,6 @@ const AdminOrderDetails = () => {
 
     return (
         <div className='min-h-screen bg-white pb-32'>
-            {/* Header */}
             <div className='bg-white px-6 lg:px-12 py-6 flex items-center justify-between sticky top-0 z-40 border-b border-gray-50'>
                 <div className='flex items-center gap-6'>
                     <button onClick={() => navigate(-1)} className='w-12 h-12 flex items-center justify-center bg-gray-50 hover:bg-gray-900 hover:text-white rounded-2xl transition-all shadow-sm'>
@@ -150,7 +145,6 @@ const AdminOrderDetails = () => {
 
             <div className='p-6 lg:p-12 max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-10'>
                 <div className='lg:col-span-2 space-y-12'>
-                    {/* Shipping Destination */}
                     <section className='bg-blue-50/30 rounded-[3rem] p-10 border border-blue-100/50 relative overflow-hidden'>
                         <div className='absolute top-0 right-0 p-8 opacity-10'>
                             <FaMapMarkerAlt size={120} className='text-blue-600' />
@@ -177,7 +171,6 @@ const AdminOrderDetails = () => {
                         </div>
                     </section>
 
-                    {/* Order Content */}
                     <section className='space-y-6'>
                         <div className='flex items-center justify-between px-2'>
                             <h2 className='text-[11px] font-black text-gray-400 uppercase tracking-[4px]'>Order Content</h2>
@@ -215,7 +208,6 @@ const AdminOrderDetails = () => {
                 </div>
 
                 <div className='space-y-10'>
-                    {/* Billing Summary */}
                     <section className='bg-gray-950 rounded-[3rem] p-10 text-white shadow-2xl shadow-gray-200 relative overflow-hidden'>
                         <div className='absolute -bottom-10 -right-10 w-40 h-40 bg-indigo-500/10 rounded-full blur-3xl' />
                         <div className='flex items-center gap-3 mb-10 opacity-40'>
@@ -241,7 +233,6 @@ const AdminOrderDetails = () => {
                         </div>
                     </section>
 
-                    {/* Status Management */}
                     <section className='bg-white rounded-[3rem] p-10 border border-gray-100 shadow-sm'>
                         <h2 className='text-[11px] font-black text-gray-400 uppercase tracking-[4px] mb-8 px-2'>Quick Actions</h2>
                         <div className='space-y-3'>

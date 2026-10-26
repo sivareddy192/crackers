@@ -32,7 +32,6 @@ const MyOrders = () => {
 
 
 
-  // ✅ FETCH
   const fetchOrders = useCallback(async () => {
     try {
       const res = await Axios({ ...SummaryApi.order.getOrders });
@@ -51,7 +50,6 @@ const MyOrders = () => {
     fetchOrders();
   }, [fetchOrders]);
 
-  // ✅ FIXED INTERVAL (NO SPAM)
   useEffect(() => {
     const interval = setInterval(() => {
       fetchOrders();
@@ -60,7 +58,6 @@ const MyOrders = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // ✅ GROUPING
   const groupedOrders = Object.values(
     orders.reduce((acc, order) => {
       const key = new Date(order.createdAt).toLocaleString();
@@ -103,7 +100,6 @@ const MyOrders = () => {
     }, {})
   );
 
-  // ✅ CANCEL
   const cancelOrder = async (id) => {
     try {
       await Axios({
@@ -118,7 +114,6 @@ const MyOrders = () => {
     }
   };
 
-  // ✅ 🔥 REORDER WITH ITEM COUNT
   const reorder = async (order) => {
     try {
       const id = order.orderId || order._id;
@@ -204,7 +199,6 @@ const MyOrders = () => {
             layout
             className="bg-white rounded-3xl shadow-sm hover:shadow-md transition-all duration-300 p-5 mb-5 border border-gray-50 overflow-hidden group"
           >
-            {/* HEADER */}
             <div className="flex justify-between items-start mb-6">
               <div className="cursor-pointer" onClick={() => navigate(`/dashboard/order-details/${order.orderId}`)}>
                 <h3 className="font-black text-gray-900 text-lg group-hover:text-green-700 transition-colors">
@@ -236,9 +230,7 @@ const MyOrders = () => {
               </span>
             </div>
 
-            {/* TIMELINE */}
             <div className="relative flex items-center justify-between mb-8 px-2">
-                {/* Background Connecting Line */}
                 <div className="absolute left-4 right-4 top-1/2 -translate-y-1/2 h-0.5 bg-gray-100" />
                 
                 {statusSteps.map((step, i) => {
@@ -264,7 +256,6 @@ const MyOrders = () => {
                 })}
             </div>
 
-            {/* QUICK ACTIONS */}
             <div className="flex items-center justify-between mt-10 pt-4 border-t border-gray-50">
                 <button
                     onClick={(e) => {
@@ -289,7 +280,6 @@ const MyOrders = () => {
                 </div>
             </div>
 
-            {/* DETAILS */}
             <AnimatePresence>
               {expanded === order._id && (
                 <motion.div
@@ -323,7 +313,6 @@ const MyOrders = () => {
                     </div>
                   ))}
 
-                  {/* BILL SUMMARY */}
                   <div className="mt-4 pt-4 border-t space-y-2 text-sm text-gray-600">
                     <div className="flex justify-between">
                       <span>Subtotal</span>
@@ -352,13 +341,11 @@ const MyOrders = () => {
                     )}
                   </div>
 
-                  {/* TOTAL */}
                   <div className="flex justify-between mt-4 pt-4 border-t-2 border-dashed text-lg font-black text-gray-900">
                     <span>Grand Total</span>
                     <span>₹{order.totalAmt}</span>
                   </div>
 
-                  {/* BUTTONS */}
                   <div className="flex gap-3 mt-4">
                     {normalizeStatus(order.status) === "pending" && (
                       <button
@@ -383,7 +370,6 @@ const MyOrders = () => {
         );
       })}
 
-      {/* TOAST component removed as we use react-hot-toast now */}
     </div>
   );
 };

@@ -81,7 +81,6 @@ const AdminLayout = () => {
                 <img src={traceLogo} alt="Trace" className="h-auto max-h-20 w-full max-w-48 object-contain" />
             </div>
 
-            {/* Nav Items */}
             <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
                 <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest px-3 mb-3">Navigation</p>
                 {navItems.map(item => (
@@ -97,7 +96,6 @@ const AdminLayout = () => {
                 ))}
             </nav>
 
-            {/* Logout */}
             <div className="px-3 pb-6 pt-3 border-t border-gray-100">
                 <button
                     onClick={handleLogout}
@@ -117,12 +115,10 @@ const AdminLayout = () => {
         <div className="trace-fire-theme min-h-screen bg-[#f7f8fc] flex">
             <Toaster />
 
-            {/* Desktop Sidebar */}
             <div className="hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0 lg:z-50">
                 <Sidebar />
             </div>
 
-            {/* Mobile Sidebar Overlay */}
             {sidebarOpen && (
                 <div className="lg:hidden fixed inset-0 z-50 flex">
                     <div
@@ -135,7 +131,6 @@ const AdminLayout = () => {
                 </div>
             )}
 
-            {/* Main content area */}
             <div className="flex-1 lg:ml-64 flex flex-col min-h-screen overflow-x-hidden">
                 <header className="bg-white border-b border-gray-100 sticky top-0 z-40 shadow-sm">
                     <div className="px-4 lg:px-8 py-3 flex items-center justify-between">
@@ -176,7 +171,6 @@ const AdminLayout = () => {
                     </div>
                 </header>
 
-                {/* Page Content */}
                 <main className="flex-1 overflow-y-auto">
                     <Outlet />
                 </main>

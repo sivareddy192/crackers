@@ -100,7 +100,6 @@ const DeliveryOrderDetails = () => {
 
     if (loading) return (
         <div className='min-h-screen bg-gray-50 pb-32 animate-pulse'>
-            {/* Header Skeleton */}
             <div className='bg-white px-6 py-6 border-b border-gray-100 flex items-center gap-4 sticky top-0 z-40'>
                 <Skeleton className='w-8 h-8 rounded-xl' />
                 <div className='space-y-2'>
@@ -108,7 +107,6 @@ const DeliveryOrderDetails = () => {
                     <Skeleton className='h-3.5 w-20' />
                 </div>
             </div>
-            {/* Content Cards Skeleton */}
             <div className='p-6 max-w-2xl mx-auto space-y-6'>
                 <div className='bg-white rounded-[2.5rem] p-8 border border-gray-100 space-y-4 h-64 flex flex-col justify-between'>
                     <Skeleton className='h-4 w-40' />
@@ -127,7 +125,6 @@ const DeliveryOrderDetails = () => {
 
     return (
         <div className='min-h-screen bg-gray-50 pb-32'>
-            {/* Header */}
             <div className='bg-white px-6 py-6 border-b border-gray-100 flex items-center gap-4 sticky top-0 z-40'>
                 <button onClick={() => navigate(-1)} className='p-2 hover:bg-gray-100 rounded-xl transition-all'>
                     <FaArrowLeft className='text-gray-900' />
@@ -142,7 +139,6 @@ const DeliveryOrderDetails = () => {
             </div>
 
             <div className='p-6 max-w-2xl mx-auto space-y-6'>
-                {/* Customer Details */}
                 <section className='bg-white rounded-[2.5rem] p-8 shadow-sm border border-gray-100'>
                     <div className='flex items-center gap-3 mb-6'>
                         <div className='w-10 h-10 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600'>
@@ -190,7 +186,6 @@ const DeliveryOrderDetails = () => {
                     </div>
                 </section>
 
-                {/* Order Content - Products */}
                 <section className='space-y-4'>
                     <h2 className='text-[10px] font-black text-gray-400 uppercase tracking-[3px] px-2'>Order Content</h2>
                     {orderItems.map((item, idx) => (
@@ -219,7 +214,6 @@ const DeliveryOrderDetails = () => {
                     ))}
                 </section>
 
-                {/* Billing Summary */}
                 <section className='bg-gray-900 rounded-[2.5rem] p-8 text-white shadow-2xl shadow-gray-200'>
                     <div className='flex items-center gap-3 mb-6 opacity-60'>
                         <FaReceipt size={14}/>
@@ -242,7 +236,6 @@ const DeliveryOrderDetails = () => {
                     </div>
                 </section>
 
-                {/* Actions */}
                 {mainOrder.status !== 'Delivered' ? (
                     <section className='bg-white rounded-[2.5rem] p-8 border border-gray-100 shadow-sm'>
                         <h2 className='text-[10px] font-black text-gray-400 uppercase tracking-widest mb-6'>Update Progress</h2>

@@ -43,7 +43,7 @@ const QRScanner = ({ onScan, onClose }) => {
                     }
                     onScan(decodedText);
                 },
-                () => {} // Ignore frame errors
+                () => {}
             );
             
             setPermission('granted');

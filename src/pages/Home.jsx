@@ -20,21 +20,8 @@ const Home = () => {
   const categoryData = useSelector(state => state.product.allCategory)
   const user = useSelector(state => state.user)
 
-  const [homeFeed, setHomeFeed] = useState(() => {
-    try {
-      const cached = sessionStorage.getItem('tracly_home_feed')
-      return cached ? JSON.parse(cached) : null
-    } catch {
-      return null
-    }
-  })
-  const [loadingHomeFeed, setLoadingHomeFeed] = useState(() => {
-    try {
-      return !sessionStorage.getItem('tracly_home_feed')
-    } catch {
-      return true
-    }
-  })
+  const [homeFeed, setHomeFeed] = useState(null)
+  const [loadingHomeFeed, setLoadingHomeFeed] = useState(true)
   const [activeProductFilter, setActiveProductFilter] = useState("all")
 
   const dispatch = useDispatch()
@@ -78,28 +65,11 @@ const Home = () => {
 
     const fetchHomeFeed = async () => {
       try {
-        let feed = null
+        const response = await Axios({ ...SummaryApi.getHomeFeed, signal: controller.signal })
+        const feed = response.data?.data
 
-        // 🚀 1. Consume the pre-warm prefetch started in index.html <head>
-        if (window.__TRACLY_PREFETCH__) {
-          try {
-            const prefetchData = await window.__TRACLY_PREFETCH__
-            window.__TRACLY_PREFETCH__ = null // consume once
-            if (prefetchData?.success && prefetchData?.data) {
-              feed = prefetchData.data
-            }
-          } catch {
-            window.__TRACLY_PREFETCH__ = null
-          }
-        }
-
-        // 2. Fall back to standard Axios request if prefetch wasn't available
-        if (!feed) {
-          const response = await Axios({ ...SummaryApi.getHomeFeed, signal: controller.signal })
-          feed = response.data?.data
-          if (!response.data?.success || !feed) {
-            throw new Error(response.data?.message || "Unable to load homepage data.")
-          }
+        if (!response.data?.success || !feed) {
+          throw new Error(response.data?.message || "Unable to load homepage data.")
         }
 
         if (!isMounted) return
@@ -108,14 +78,7 @@ const Home = () => {
         const subCategories = [...(feed.subCategories || [])].sort((a, b) => a.name.localeCompare(b.name))
         dispatch(setAllCategory(categories))
         dispatch(setAllSubCategory(subCategories))
-        const fullFeed = { ...feed, categories, subCategories }
-        setHomeFeed(fullFeed)
-
-        try {
-          sessionStorage.setItem('tracly_home_feed', JSON.stringify(fullFeed))
-        } catch {
-          // ignore quota limits
-        }
+        setHomeFeed({ ...feed, categories, subCategories })
       } catch (error) {
         if (error?.code === "ERR_CANCELED" || !isMounted) return
 
@@ -149,17 +112,14 @@ const Home = () => {
 
   return (
     <section className="home-page min-h-screen bg-white transition-colors duration-300">
-      {/* Primary Semantic H1 for SEO & Accessibility */}
       <h1 className="sr-only">Tracly — Crackers &amp; Fireworks Online Store | Safe Celebrations</h1>
 
-      {/* Conditionally load Welcome Popup only for signed-in users */}
       {user?._id && (
         <Suspense fallback={null}>
           <WelcomeOffersPopup />
         </Suspense>
       )}
 
-      {/* 1. Dynamic Top Trending Promo Strip */}
       {shouldShowTopBanner && (
         <div 
           onClick={() => {
@@ -173,7 +133,6 @@ const Home = () => {
         </div>
       )}
       
-      {/* Banner Carousel Section */}
       <div className="relative group">
         <BannerDisplay banners={homeFeed?.banners || []} loading={loadingHomeFeed} />
       </div>
@@ -195,7 +154,6 @@ const Home = () => {
         ))}
       </div>
 
-      {/* Festive Special Deals Shelf */}
       {festivalOffers.length > 0 && (
         <div className="container mx-auto px-4 mt-8 lg:mt-12 relative z-10">
           <div className="flex items-center gap-2 mb-4 lg:mb-6">
@@ -235,7 +193,6 @@ const Home = () => {
                         className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
                       />
                    )}
-                   {/* Gradient overlay */}
                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/30 to-transparent flex flex-col justify-end p-5 text-white">
                        <div className="transform translate-y-0.5 group-hover:translate-y-0 transition-all duration-300">
                            {offer.discountPercent > 0 && (
@@ -268,7 +225,6 @@ const Home = () => {
         </div>
       )}
 
-      {/* Shop by Category Section */}
       <div id="home-categories" className="container mx-auto px-3 pt-5 lg:px-4 lg:pt-8 relative z-10 scroll-mt-24">
         <div className="flex items-center justify-between mb-3 lg:mb-4">
           <div className="flex items-center gap-2.5">
@@ -322,7 +278,6 @@ const Home = () => {
         </div>
       </div>
 
-      {/* Featured Products */}
       <section id="home-featured" className="container mx-auto px-3 pt-6 pb-16 lg:px-4 lg:pt-8 scroll-mt-24">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2 sm:mb-4">
           <h2 className="font-black text-lg sm:text-xl lg:text-2xl text-slate-900 tracking-tight font-heading">

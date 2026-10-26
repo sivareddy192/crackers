@@ -73,7 +73,6 @@ const ProductList = () => {
     setDisplaySubCategory(sub)
   }, [AllSubCategory, params])
 
-  // Scroll inner container and window to top when subcategory changes
   useEffect(() => {
     window.scrollTo(0, 0)
     if (containerRef.current) {
@@ -85,7 +84,6 @@ const ProductList = () => {
     <section className='bg-gray-50 sticky top-28 lg:top-20'>
       <div className='container mx-auto grid grid-cols-[80px_1fr] md:grid-cols-[100px_1fr] lg:grid-cols-[140px_1fr] h-[calc(100vh-112px)] lg:h-[calc(100vh-80px)]'>
 
-        {/* Sidebar - Subcategory List */}
         <div className='bg-white overflow-y-auto h-full border-r border-gray-100 no-scrollbar'>
             <div className='flex flex-col'>
                 {DisplaySubCategory.map((s, idx) => {
@@ -98,7 +96,6 @@ const ProductList = () => {
                             className={`group w-full relative py-3 px-1 flex flex-col items-center gap-2 transition-all duration-200 border-b border-gray-50
                                 ${isActive ? 'bg-green-50/50' : 'hover:bg-gray-50'}`}
                         >
-                            {/* Active Indicator Bar */}
                             {isActive && (
                                 <div className='absolute left-0 top-0 bottom-0 w-1 bg-green-600' />
                             )}
@@ -120,7 +117,6 @@ const ProductList = () => {
         </div>
 
 
-        {/* Main content Area */}
         <div ref={containerRef} className='bg-white overflow-y-auto h-full no-scrollbar border-l border-gray-100'>
           <div className='bg-white p-4 lg:p-6 sticky top-0 z-10 flex items-center justify-between border-b border-gray-100'>
             <div>
@@ -142,18 +138,15 @@ const ProductList = () => {
           </div>
 
 
-          {/* Product Grid */}
           <div className='p-3 lg:p-10 pt-4 lg:pt-0'>
             <div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-3 lg:gap-10'>
 
-              {/* Skeletons while loading initial data */}
               {loading && data.length === 0 && (
                   new Array(8).fill(null).map((_, index) => (
                       <ProductLoading key={"InitialLoading" + index} />
                   ))
               )}
 
-              {/* Product Items */}
               {data.map((p, index) => (
                 <ProductBox
                   key={p._id + index}
@@ -161,7 +154,6 @@ const ProductList = () => {
                 />
               ))}
 
-              {/* Skeletons while loading more data */}
               {loading && data.length > 0 && (
                   new Array(4).fill(null).map((_, index) => (
                       <ProductLoading key={"MoreLoading" + index} />
@@ -169,7 +161,6 @@ const ProductList = () => {
               )}
             </div>
 
-            {/* No Products Found UI (Only if not loading) */}
             {data.length === 0 && !loading && (
               <div className='col-span-full flex flex-col items-center justify-center py-16 lg:py-24 bg-gray-50/50 rounded-4xl lg:rounded-[3rem] border-2 border-dashed border-gray-100'>
                 <div className='w-24 h-24 lg:w-40 lg:h-40 bg-white rounded-full flex items-center justify-center shadow-xl shadow-gray-100 mb-6 lg:mb-8'>
@@ -185,7 +176,6 @@ const ProductList = () => {
             )}
 
 
-            {/* Load More Button */}
             {page < totalPage && !loading && (
               <div className='flex justify-center mt-12 mb-8'>
                 <button

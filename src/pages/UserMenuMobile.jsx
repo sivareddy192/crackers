@@ -16,7 +16,6 @@ const UserMenuMobile = () => {
         </div>
 
         <div className='p-4 max-w-md mx-auto'>
-           {/* We reuse the UserMenu but remove the fixed width for mobile */}
            <div className='[&>div]:max-w-none [&>div]:shadow-none [&>div]:border-none [&>div]:bg-transparent [&>div]:p-0'>
               <UserMenu/>
            </div>

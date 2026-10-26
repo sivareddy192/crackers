@@ -22,7 +22,6 @@ const Search = () => {
     const searchText = new URLSearchParams(location.search).get('q') || ''
     const [placeholderIndex, setPlaceholderIndex] = useState(0)
 
-    // Smooth rotating placeholder without heavy external library dependencies
     useEffect(() => {
         if (isSearchPage) return
         const timer = setInterval(() => {

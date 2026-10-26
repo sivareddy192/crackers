@@ -54,7 +54,6 @@ const DisplayCartItem = ({ close }) => {
           baseStart = 3;
         }
 
-        // Dynamic Delivery Speed based on Cart Quantity: Less items -> slower, More items (>1) OR same item qty >= 2 -> faster delivery
         const hasSameItemSpeedup = cartItem.some(item => (item.quantity || 1) >= 2);
         const cartQtyOffset = (totalQty <= 1 && !hasSameItemSpeedup) ? 3 : 0;
         const startOffset = baseStart + cartQtyOffset;
@@ -81,10 +80,8 @@ const DisplayCartItem = ({ close }) => {
             setLoadingCoupons(true)
             const response = await Axios(SummaryApi.coupon_list)
             if (response.data.success) {
-                // Filter active and valid coupons
                 let active = (response.data.coupons || []).filter(c => c.isActive && !c.isExpired)
                 
-                // 🔥 REMOVE USED COUPONS
                 if (user?.usedCoupons) {
                     active = active.filter(c => !user.usedCoupons.includes(c.code));
                 }
@@ -128,7 +125,6 @@ const DisplayCartItem = ({ close }) => {
         let maxDiscount = -1;
 
         availableCoupons.forEach(coupon => {
-            // Basic validation
             if (totalPrice >= (coupon.minAmount || 0)) {
                 let discount = (totalPrice * coupon.discountPercent) / 100;
                 if (coupon.maxDiscount && discount > coupon.maxDiscount) {
@@ -189,7 +185,6 @@ const DisplayCartItem = ({ close }) => {
                         </div>
                     ) : (
                         <>
-                            {/* Delivery Banner */}
                             <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-emerald-950/20 dark:to-green-950/20 p-4 rounded-2xl border border-green-100 dark:border-green-900/30 flex items-center gap-3">
                                 <div className='bg-green-600 p-2 rounded-lg text-white'>
                                     <FaCheckCircle />
@@ -204,7 +199,6 @@ const DisplayCartItem = ({ close }) => {
                                 </div>
                             </div>
 
-                            {/* 🎫 Coupon Section */}
                             <div className="bg-white dark:bg-neutral-900 p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-neutral-800 space-y-4 transition-colors">
                                 <div className='flex items-center justify-between'>
                                     <div className='flex items-center gap-2'>
@@ -239,7 +233,6 @@ const DisplayCartItem = ({ close }) => {
                                             </button>
                                         </div>
 
-                                        {/* Available Coupons List */}
                                         <div className='flex gap-3 overflow-x-auto pb-2 scrollbar-none'>
                                             {availableCoupons.map((c) => (
                                                 <div 
@@ -278,7 +271,6 @@ const DisplayCartItem = ({ close }) => {
                                 )}
                             </div>
 
-                            {/* Cart Items */}
                             <div className="bg-white dark:bg-neutral-900 p-6 rounded-[2rem] shadow-xl shadow-gray-100/50 dark:shadow-none border border-gray-50 dark:border-neutral-800 space-y-6 transition-colors">
                                 <h3 className='text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] ml-1'>Cart Summary</h3>
                                 <div className='space-y-5'>
@@ -315,9 +307,9 @@ const DisplayCartItem = ({ close }) => {
                                                 <div className='w-24'>
                                                     <AddToCartButton data={{
                                                         ...item.productId,
-                                                        unit: item.unit, // ✅ CRITICAL: Use raw cart item unit so lookup inside AddToCartButton succeeds perfectly
-                                                        price: item.productId?.price, // Base price, button handles lookup if needed or uses passed data
-                                                        _id: item.productId?._id // Use product ID for API calls
+                                                        unit: item.unit,
+                                                        price: item.productId?.price,
+                                                        _id: item.productId?._id
                                                     }} />
                                                 </div>
                                                 <button
@@ -333,9 +325,7 @@ const DisplayCartItem = ({ close }) => {
                                 </div>
                             </div>
 
-                            {/* Bill Details */}
                             <div className="p-8 rounded-[2.5rem] bg-white dark:bg-neutral-900 text-gray-900 dark:text-gray-100 shadow-2xl shadow-gray-200 dark:shadow-none border border-gray-50 dark:border-neutral-800 space-y-5 relative overflow-hidden transition-colors">
-                                {/* Decorative elements */}
                                 <div className='absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16 blur-2xl' />
                                 <div className='absolute bottom-0 left-0 w-24 h-24 bg-green-500/10 rounded-full -ml-12 -mb-12 blur-2xl' />
 

@@ -8,7 +8,6 @@ const fetchUserDetails = async()=>{
         })
         return response.data
     } catch (error) {
-        // Silently fail if user is not logged in
         return { success: false }
     }
 }

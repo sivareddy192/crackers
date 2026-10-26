@@ -86,7 +86,6 @@ const UploadCategoryModel = ({ close, fetchData }) => {
 
         <form className='my-3 grid gap-2' onSubmit={handleSubmit}>
 
-          {/* NAME */}
           <div className='grid gap-1'>
             <label htmlFor='categoryName'>Name</label>
             <input
@@ -100,7 +99,6 @@ const UploadCategoryModel = ({ close, fetchData }) => {
             />
           </div>
 
-          {/* IMAGE */}
           <div className='grid gap-1'>
             <p>Image</p>
 
@@ -146,7 +144,6 @@ const UploadCategoryModel = ({ close, fetchData }) => {
             </div>
           </div>
 
-          {/* SUBMIT */}
           <button
             className={`
               py-2 font-semibold

@@ -10,7 +10,6 @@ const Success = () => {
     const { fetchCartItem, setAppliedCoupon, fetchOrder, fetchUser } = useGlobalContext()
     const [verifying, setVerifying] = useState(false)
 
-    // Extract session_id from URL
     const query = new URLSearchParams(location.search)
     const sessionId = query.get('session_id')
 
@@ -30,7 +29,6 @@ const Success = () => {
                 }
             }
 
-            // Refresh state regardless of sessionId (for COD or safety)
             if (fetchCartItem) fetchCartItem();
             if (setAppliedCoupon) setAppliedCoupon(null);
             if (fetchOrder) fetchOrder();

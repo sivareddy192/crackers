@@ -6,7 +6,6 @@ const Axios = axios.create({
     withCredentials : true
 })
 
-// ✅ REQUEST INTERCEPTOR
 Axios.interceptors.request.use(
     async(config)=>{
         const accessToken = localStorage.getItem('accessToken')
@@ -23,7 +22,6 @@ Axios.interceptors.request.use(
 )
 
 
-// ❗ RESPONSE INTERCEPTOR
 Axios.interceptors.response.use(
     (response)=>{
         return response
@@ -32,7 +30,6 @@ Axios.interceptors.response.use(
         let originRequest = error.config 
 
         if(error?.response?.status === 401 && !originRequest.retry){
-            // Check for force logout signal from backend (e.g., account inactivated)
             if (error.response.data?.forceLogout) {
                 localStorage.clear();
                 window.location.href = "/login";
@@ -51,7 +48,6 @@ Axios.interceptors.response.use(
                     return Axios(originRequest)
                 }
             } else {
-                // No refresh token found, do not force login for guests, just reject the request error
                 return Promise.reject(error);
             }
         }
@@ -61,7 +57,6 @@ Axios.interceptors.response.use(
 )
 
 
-// 🔁 REFRESH TOKEN FUNCTION
 const refreshAccessToken = async(refreshToken)=>{
     try {
         const response = await axios({

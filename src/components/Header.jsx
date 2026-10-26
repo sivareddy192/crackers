@@ -56,7 +56,6 @@ const Header = () => {
       <div className='container mx-auto px-3 sm:px-4'>
         <div className='flex items-center justify-between h-14 lg:h-20 gap-4'>
 
-          {/* Logo Section */}
           <Link to={"/"} aria-label="Tracly Home" className='shrink-0 transition-transform active:scale-95 flex items-center'>
             <picture>
               <source srcSet={logoAvif} type="image/avif" />
@@ -72,15 +71,12 @@ const Header = () => {
             </picture>
           </Link>
 
-          {/* Desktop Search */}
           <div className='hidden lg:block flex-1 max-w-xl mx-4'>
             <Search />
           </div>
 
-          {/* Right Actions */}
           <div className='flex items-center gap-2 sm:gap-3 lg:gap-4'>
 
-            {/* Mobile User Icon Only */}
             <div className='flex lg:hidden items-center gap-3'>
               <button
                 type='button'
@@ -117,13 +113,11 @@ const Header = () => {
               </button>
             </div>
 
-            {/* Desktop Navigation & Actions */}
             <div className='hidden lg:flex items-center gap-4 justify-end'>
               <Link to='/safety-tips' className='whitespace-nowrap text-sm font-bold text-slate-600 transition-colors hover:text-orange-600'>
                 Safety Tips
               </Link>
               
-              {/* Desktop Cart Button */}
               <button
                 type='button'
                 onClick={() => navigate('/cart')}
@@ -138,7 +132,6 @@ const Header = () => {
                 )}
               </button>
 
-              {/* User Section */}
               {user?._id ? (
                 <div className='relative' ref={userMenuRef}>
                   <button
@@ -190,7 +183,6 @@ const Header = () => {
           </div>
         </div>
 
-        {/* Mobile Search - Bottom of Header */}
         <div className='lg:hidden pb-3'>
           <Search />
         </div>

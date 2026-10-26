@@ -40,7 +40,6 @@ const ProductDisplay = () => {
   const galleryRef = useRef(null)
   const purchaseRef = useRef(null)
 
-  // ⚡ 0.001ms INSTANT RENDER: Initialize synchronously from router state or local session cache
   const initialProduct = location.state?.product || getCachedProduct(productId)
 
   const [data, setData] = useState(() => initialProduct ? {
@@ -76,18 +75,49 @@ const ProductDisplay = () => {
   const discountPercent = getDiscountPercent(data?.mrp, data?.price)
   const hasDiscount = discountPercent > 0
 
+  const slugTitle = useMemo(() => {
+    try {
+      const parts = (productUrl || "").split("-")
+      parts.pop()
+      const raw = parts.join(" ")
+      return raw ? raw.charAt(0).toUpperCase() + raw.slice(1) : "Celebration Crackers"
+    } catch {
+      return "Celebration Crackers"
+    }
+  }, [productUrl])
+
   const fetchProductDetails = useCallback(async () => {
     if (!productId) return
     try {
       if (!data && !initialProduct) {
         setLoading(true)
       }
-      const response = await Axios({
-        ...SummaryApi.getProductDetails,
-        data: { productId }
-      })
-      if (response.data.success && response.data.data) {
-        const product = response.data.data
+
+      let product = null
+
+      if (window.__TRACLY_PRODUCT_PREFETCH__) {
+        try {
+          const prefetchData = await window.__TRACLY_PRODUCT_PREFETCH__
+          window.__TRACLY_PRODUCT_PREFETCH__ = null
+          if (prefetchData?.success && prefetchData?.data) {
+            product = prefetchData.data
+          }
+        } catch {
+          window.__TRACLY_PRODUCT_PREFETCH__ = null
+        }
+      }
+
+      if (!product) {
+        const response = await Axios({
+          ...SummaryApi.getProductDetails,
+          data: { productId }
+        })
+        if (response.data?.success && response.data?.data) {
+          product = response.data.data
+        }
+      }
+
+      if (product) {
         setCachedProduct(productId, product)
         setData({
           ...product,
@@ -107,15 +137,14 @@ const ProductDisplay = () => {
     } finally {
       setLoading(false)
     }
-  }, [productId])
+  }, [productId, data, initialProduct])
 
   const fetchReviews = useCallback(async () => {
     if (!productId) return
     try {
       const response = await Axios(SummaryApi.review_get(productId))
       if (response.data.success) setReviews(response.data.data || [])
-    } catch (error) {
-      AxiosToastError(error)
+    } catch {
     }
   }, [productId])
 
@@ -138,8 +167,12 @@ const ProductDisplay = () => {
       setLoading(false)
     }
     fetchProductDetails()
-    fetchReviews()
-  }, [productId, fetchProductDetails, fetchReviews])
+
+    const timer = setTimeout(() => {
+      fetchReviews()
+    }, 1500)
+    return () => clearTimeout(timer)
+  }, [productId, fetchProductDetails, fetchReviews, location.state])
 
   useEffect(() => {
     const purchaseElement = purchaseRef.current
@@ -198,9 +231,63 @@ const ProductDisplay = () => {
 
   if (loading || !data) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <ProductLoading />
-      </div>
+      <section className="min-h-screen bg-white pb-24 text-slate-900 lg:pb-10">
+        <div className="mx-auto max-w-[1440px] px-3 py-4 sm:px-5 lg:px-8">
+          <nav aria-label="Breadcrumb" className="mb-4 flex items-center gap-2 overflow-hidden whitespace-nowrap text-xs font-semibold text-slate-500">
+            <Link to="/" className="shrink-0 hover:text-orange-600">Home</Link>
+            <FaChevronRight className="h-2.5 w-2.5 shrink-0 text-slate-300" />
+            <Link to="/products" className="shrink-0 hover:text-orange-600">Crackers</Link>
+            <FaChevronRight className="h-2.5 w-2.5 shrink-0 text-slate-300" />
+            <span className="truncate text-slate-900">{slugTitle}</span>
+          </nav>
+
+          <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1.08fr)_minmax(0,1fr)_minmax(260px,.78fr)] lg:gap-7">
+            <div className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-[72px_minmax(0,1fr)] lg:gap-3">
+              <div className="order-2 flex gap-2 overflow-x-auto pb-1 no-scrollbar sm:order-1 sm:max-h-[470px] sm:flex-col sm:overflow-y-auto sm:overflow-x-hidden">
+                {[1, 2, 3].map(i => (
+                  <div key={i} className="h-[62px] w-[62px] shrink-0 rounded-xl border border-slate-200 bg-slate-100 p-1 sm:h-[72px] sm:w-[72px]" />
+                ))}
+              </div>
+              <div className="order-1 relative min-w-0 overflow-hidden rounded-2xl border border-orange-200 bg-orange-50/30 sm:order-2">
+                <div className="flex aspect-square sm:aspect-[1/1.04] sm:max-h-[500px] items-center justify-center">
+                  <div className="h-12 w-12 rounded-full bg-orange-200/50 animate-pulse" />
+                </div>
+              </div>
+            </div>
+
+            <div className="min-w-0">
+              <span className="mb-2 inline-flex rounded-full bg-orange-500 px-3 py-1 text-[10px] font-extrabold uppercase tracking-wide text-white">
+                Special Offer
+              </span>
+              <h1 className="font-heading text-2xl font-black leading-tight tracking-tight text-slate-950 sm:text-3xl">
+                {slugTitle}
+              </h1>
+              <div className="mt-3 flex items-center gap-2">
+                <div className="h-4 w-28 rounded bg-slate-100" />
+              </div>
+              <div className="mt-4 flex items-center gap-3">
+                <div className="h-8 w-24 rounded bg-slate-200" />
+              </div>
+              <div className="mt-5 space-y-2">
+                <div className="h-3.5 w-full rounded bg-slate-100" />
+                <div className="h-3.5 w-4/5 rounded bg-slate-100" />
+              </div>
+              <div className="mt-6">
+                <div className="h-11 w-full max-w-[280px] rounded-xl bg-orange-500" />
+              </div>
+            </div>
+
+            <div className="hidden lg:block">
+              <div className="rounded-2xl border border-slate-200 bg-slate-50/50 p-5">
+                <div className="h-6 w-32 rounded bg-slate-200 mb-4" />
+                <div className="h-4 w-full rounded bg-slate-100 mb-2" />
+                <div className="h-4 w-3/4 rounded bg-slate-100 mb-6" />
+                <div className="h-11 w-full rounded-xl bg-orange-600" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
     )
   }
 
@@ -235,7 +322,7 @@ const ProductDisplay = () => {
                 >
                   <img
                     src={getImageUrl(image, { width: 120, quality: 75 })}
-                    alt=""
+                    alt={`Thumbnail ${index + 1}`}
                     width="72"
                     height="72"
                     loading="lazy"
@@ -264,7 +351,9 @@ const ProductDisplay = () => {
                     aria-label={`Zoom ${data.name}, image ${index + 1}`}
                   >
                     <img
-                      src={getImageUrl(image, { width: 640, quality: 80 })}
+                      src={getImageUrl(image, { width: 480, quality: 70 })}
+                      srcSet={[360, 480, 640].map(w => `${getImageUrl(image, { width: w, quality: 70 })} ${w}w`).join(', ')}
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 500px"
                       alt={`${data.name} ${index + 1}`}
                       width="500"
                       height="500"
@@ -506,7 +595,7 @@ const ProductDisplay = () => {
         </section>
 
         {data.relatedProducts?.length > 0 || category?._id ? (
-          <div className="mt-6">
+          <div className="mt-6" style={{ contentVisibility: 'auto', containIntrinsicSize: '360px' }}>
             <CategoryWiseProductDisplay
               id={category?._id}
               name="Related Products"

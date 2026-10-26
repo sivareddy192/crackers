@@ -16,7 +16,6 @@ const WelcomeOffersPopup = () => {
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
-    // Qualify user: Logged in, 0 orders, 0 coupons used, and popup not yet seen in local storage
     if (
       user?._id &&
       (!user.orderHistory || user.orderHistory.length === 0) &&
@@ -33,30 +32,25 @@ const WelcomeOffersPopup = () => {
     try {
       setLoading(true);
       
-      // Fetch coupons and discounted deals in parallel
       const [couponRes, dealsRes] = await Promise.all([
         Axios(SummaryApi.coupon_list),
         Axios(SummaryApi.product_offers)
       ]);
 
-      // 1. Find the latest active first-order-only coupon
       if (couponRes.data.success) {
         const welcomeCoupon = couponRes.data.coupons?.find(c => c.isFirstOrderOnly && c.isActive);
         setCoupon(welcomeCoupon || null);
       }
 
-      // 2. Fetch discounted deals
       if (dealsRes.data.success) {
         setProductDeals(dealsRes.data.data || []);
       }
 
-      // Show popup only if there is either a coupon OR active deals to display
       if (
         (couponRes.data.success && couponRes.data.coupons?.some(c => c.isFirstOrderOnly && c.isActive)) ||
         (dealsRes.data.success && dealsRes.data.data?.length > 0)
       ) {
         setIsOpen(true);
-        // Flag so it doesn't show again
         localStorage.setItem(`welcome_offers_shown_${user._id}`, 'true');
       }
     } catch (error) {
@@ -80,10 +74,8 @@ const WelcomeOffersPopup = () => {
     <div className="fixed inset-0 z-99 flex items-center justify-center bg-slate-950/75 backdrop-blur-sm p-4 md:p-6 overflow-y-auto animate-in fade-in duration-300">
       <div className="bg-white dark:bg-neutral-900 rounded-3xl w-full max-w-2xl shadow-2xl relative border border-slate-100 dark:border-neutral-800 flex flex-col overflow-hidden animate-in zoom-in-95 duration-500 scale-100 transition-all max-h-[90vh]">
         
-        {/* Animated visual header */}
         <div className="relative bg-linear-to-br from-orange-500 via-red-500 to-fuchsia-600 text-white px-6 py-8 md:py-12 text-center overflow-hidden shrink-0">
           
-          {/* CSS floating confetti particles */}
           <div className="absolute top-4 left-10 bg-yellow-300 w-2 h-2 rounded-full animate-pulse opacity-75" />
           <div className="absolute top-12 right-20 bg-teal-300 w-3 h-3 rounded-sm rotate-45 opacity-60" />
           <div className="absolute bottom-8 left-20 bg-pink-300 w-2 h-4 rounded opacity-80 animate-bounce" />
@@ -107,10 +99,8 @@ const WelcomeOffersPopup = () => {
           </p>
         </div>
 
-        {/* Scrollable inner content */}
         <div className="p-6 md:p-8 overflow-y-auto space-y-8 bg-slate-50 dark:bg-neutral-950 flex-1">
           
-          {/* Dynamic Coupon Section */}
           {coupon && (
             <div className="space-y-3">
               <div className="flex justify-between items-center border-b border-slate-200 dark:border-neutral-800 pb-2">
@@ -140,7 +130,6 @@ const WelcomeOffersPopup = () => {
             </div>
           )}
 
-          {/* Product Offers Section */}
           {productDeals.length > 0 && (
             <div className="space-y-4">
               <div className="flex items-center justify-between border-b border-slate-200 dark:border-neutral-800 pb-2">
@@ -155,7 +144,6 @@ const WelcomeOffersPopup = () => {
                   return (
                     <div key={product._id} className="bg-white dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800 rounded-2xl p-3 flex flex-col shadow-xs hover:shadow-lg hover:shadow-slate-200/50 dark:hover:shadow-black/20 transition-all duration-300 group shrink-0 select-none">
                       
-                      {/* Image Container */}
                       <div className="relative w-full aspect-square bg-slate-50 dark:bg-neutral-800 rounded-xl overflow-hidden flex items-center justify-center mb-2">
                         <img 
                           src={getImageUrl(product.image?.[0])} 
@@ -169,7 +157,6 @@ const WelcomeOffersPopup = () => {
                         )}
                       </div>
 
-                      {/* Product Details */}
                       <div className="flex-1 flex flex-col mb-2">
                         <h4 className="text-xs font-extrabold text-slate-800 dark:text-neutral-100 line-clamp-2 tracking-tight min-h-[2rem] leading-tight uppercase">
                           {product.name}
@@ -184,7 +171,6 @@ const WelcomeOffersPopup = () => {
                         </div>
                       </div>
 
-                      {/* Instant Add To Cart trigger */}
                       <div className="shrink-0 mt-auto">
                         <AddToCartButton data={product} />
                       </div>
@@ -195,7 +181,6 @@ const WelcomeOffersPopup = () => {
             </div>
           )}
 
-          {/* CTAs */}
           <div className="text-center pt-4">
             <button 
               onClick={() => setIsOpen(false)}

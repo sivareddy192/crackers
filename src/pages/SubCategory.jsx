@@ -27,7 +27,6 @@ const SubCategoryPage = () => {
   const [openDeleteConfirmBox, setOpenDeleteConfirmBox] = useState(false);
   
 
-  //Fetch all subcategories
   const fetchSubCategory = async () => {
     try {
       setLoading(true);
@@ -52,7 +51,6 @@ const SubCategoryPage = () => {
     fetchSubCategory();
   }, []);
 
-  // Table Columns
   const column = [
     columnHelper.accessor('name', {
       header: "Name"
@@ -102,7 +100,6 @@ const SubCategoryPage = () => {
       cell: ({ row }) => (
         <div className='flex justify-center gap-3'>
 
-          {/*Edit Button */}
           <button
             onClick={() => {
               setOpenEdit(true);
@@ -113,7 +110,6 @@ const SubCategoryPage = () => {
             <HiPencil size={20} />
           </button>
 
-          {/*Delete Button */}
           <button
             onClick={() => {
               setOpenDeleteConfirmBox(true);
@@ -129,7 +125,6 @@ const SubCategoryPage = () => {
   ];
   
 
-  // Handle Delete Subcategory
   const handleDeleteSubCategory = async () => {
     try {
       const response = await Axios({
@@ -178,7 +173,6 @@ const SubCategoryPage = () => {
         )}
       </div>
 
-      {/*Add Subcategory Modal */}
       {openAddSubCategory && (
         <UploadSubCategory
           close={() => setOpenAddSubCategory(false)}
@@ -186,7 +180,6 @@ const SubCategoryPage = () => {
         />
       )}
 
-      {/* Image Viewer */}
       {ImageURL && (
         <ViewImage
           url={getImageUrl(ImageURL)}
@@ -195,7 +188,6 @@ const SubCategoryPage = () => {
       )}
 
 
-      {/* Edit Subcategory */}
       {openEdit && (
         <EditSubCategory
           data={editData}
@@ -204,7 +196,6 @@ const SubCategoryPage = () => {
         />
       )}
 
-      {/* Delete Confirmation */}
       {openDeleteConfirmBox && (
         <ConfirmBox
           cancel={() => setOpenDeleteConfirmBox(false)}

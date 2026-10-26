@@ -1,13 +1,13 @@
-// Microsecond client-side product cache for instant (0.001ms) rendering
 const memoryCache = new Map();
 
 export const setCachedProduct = (id, product) => {
     if (!id || !product) return;
     memoryCache.set(String(id), product);
     try {
-        sessionStorage.setItem(`trace_p_${id}`, JSON.stringify(product));
+        const serialized = JSON.stringify(product);
+        sessionStorage.setItem(`trace_p_${id}`, serialized);
+        localStorage.setItem(`trace_p_${id}`, serialized);
     } catch (e) {
-        // Handle quota exceeded gracefully
     }
 };
 
@@ -18,7 +18,7 @@ export const getCachedProduct = (id) => {
         return memoryCache.get(key);
     }
     try {
-        const raw = sessionStorage.getItem(`trace_p_${key}`);
+        const raw = sessionStorage.getItem(`trace_p_${key}`) || localStorage.getItem(`trace_p_${key}`);
         if (raw) {
             const parsed = JSON.parse(raw);
             memoryCache.set(key, parsed);
@@ -29,3 +29,4 @@ export const getCachedProduct = (id) => {
     }
     return null;
 };
+

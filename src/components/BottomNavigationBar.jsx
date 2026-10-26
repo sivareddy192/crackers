@@ -22,7 +22,6 @@ const BottomNavigationBar = () => {
         <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-slate-200/80 shadow-[0_-4px_25px_rgba(0,0,0,0.05)] z-[100] pb-safe transition-all duration-300">
             <div className="flex h-16 items-center justify-around px-2">
                 
-                {/* Home Tab */}
                 <Link to="/" className="flex-1 flex flex-col items-center justify-center gap-1 group transition-colors h-full">
                     <div className={`relative flex items-center justify-center rounded-2xl p-1.5 transition-all duration-300 active:scale-90 ${isActive('/') ? 'text-orange-600' : 'text-slate-400 group-hover:text-slate-800'}`}>
                         <FaHome size={20} className={`transition-all ${isActive('/') ? 'scale-110' : ''}`} />
@@ -54,7 +53,6 @@ const BottomNavigationBar = () => {
                     </span>
                 </Link>
 
-                {/* Cart Tab */}
                 <Link to="/cart" className="flex-1 flex flex-col items-center justify-center gap-1 group transition-colors h-full">
                     <div className={`relative flex items-center justify-center rounded-2xl p-1.5 transition-all duration-300 active:scale-90 ${isActive('/cart') ? 'text-orange-600' : 'text-slate-400 group-hover:text-slate-800'}`}>
                         <FaCartShopping size={20} className={`transition-all ${isActive('/cart') ? 'scale-110' : ''}`} />
@@ -69,7 +67,6 @@ const BottomNavigationBar = () => {
                     </span>
                 </Link>
 
-                {/* Profile Tab */}
                 <Link to={profilePath} className="flex-1 flex flex-col items-center justify-center gap-1 group transition-colors h-full">
                     <div className={`relative flex items-center justify-center rounded-2xl p-1.5 transition-all duration-300 active:scale-90 ${isActive('/user-menu') || isActive('/dashboard') ? 'text-orange-600' : 'text-slate-400 group-hover:text-slate-800'}`}>
                         <FaUser size={19} className="transition-all" />

@@ -29,7 +29,6 @@ const AddAddress = ({close}) => {
                         if (result && result.address) {
                             const addr = result.address;
                             
-                            // Map OSM address fields to our form
                             const city = addr.city || addr.town || addr.village || addr.suburb || "";
                             const state = addr.state || "";
                             const country = addr.country || "India";

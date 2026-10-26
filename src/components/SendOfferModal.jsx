@@ -56,7 +56,6 @@ const SendOfferModal = ({ close, couponData }) => {
     <div className='fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-md p-4 animate-in fade-in duration-300'>
       <div className='bg-white rounded-3xl w-full max-w-4xl shadow-2xl flex flex-col md:flex-row overflow-hidden border border-slate-100 transition-transform scale-95 md:scale-100 duration-300'>
         
-        {/* Form / Inputs Section */}
         <div className='flex-1 flex flex-col p-6 md:p-8 border-r border-slate-100'>
           <div className='flex justify-between items-center mb-6'>
             <div>
@@ -140,25 +139,20 @@ const SendOfferModal = ({ close, couponData }) => {
           </div>
         </div>
 
-        {/* Real-time Preview Section */}
         <div className='w-full md:w-96 bg-slate-50 p-6 md:p-8 flex flex-col items-center justify-center select-none'>
           <span className='text-xs font-bold tracking-widest text-slate-400 uppercase mb-4'>Visual Mockup Preview</span>
           
-          {/* Mock Email Card */}
           <div className='bg-white w-full rounded-2xl shadow-md overflow-hidden border border-slate-200 flex flex-col text-[11px] leading-normal text-slate-600 relative max-w-[300px]'>
-            {/* Gradient Header */}
             <div className='bg-gradient-to-br from-orange-500 to-fuchsia-500 p-4 text-center text-white'>
               <h4 className='font-extrabold tracking-wider uppercase opacity-90 m-0 text-[9px]'>TRACE</h4>
               <h5 className='font-bold mt-2 mb-1 text-white text-xs line-clamp-1'>{form.headline || 'Banner Headline'}</h5>
               <p className='text-[8px] opacity-75 m-0'>Premium Quality Foods</p>
             </div>
 
-            {/* Content */}
             <div className='p-4 space-y-3'>
               <p className='font-bold text-slate-800 text-[10px] m-0'>Hi Customer Name,</p>
               <p className='text-slate-500 line-clamp-3 m-0 leading-relaxed'>{form.description || 'Email body text preview will appear here...'}</p>
               
-              {/* Coupon visual container */}
               <div className='bg-orange-50/50 border border-dashed border-orange-400 rounded-lg p-3 text-center my-2'>
                 <span className='text-[7px] text-orange-500 font-bold tracking-widest block uppercase'>YOUR EXCLUSIVE CODE</span>
                 <div className='bg-white inline-block px-3 py-1 border border-slate-200 rounded font-extrabold text-slate-800 tracking-widest text-[11px] my-1 uppercase shadow-sm'>
@@ -171,7 +165,6 @@ const SendOfferModal = ({ close, couponData }) => {
                 </div>
               </div>
 
-              {/* Button & Expiry */}
               <div className='text-center pt-1'>
                 <span className='inline-block bg-orange-500 text-white font-bold rounded-full px-4 py-1.5 shadow-md shadow-orange-500/20 text-[9px]'>
                   Shop & Save Now
@@ -182,14 +175,12 @@ const SendOfferModal = ({ close, couponData }) => {
               </div>
             </div>
 
-            {/* Mock Footer */}
             <div className='p-3 bg-slate-50 border-t border-slate-100 text-center text-[8px] text-slate-400 space-y-1'>
               <p className='m-0'>Need help? Reply to this mail</p>
               <p className='m-0'>&copy; {new Date().getFullYear()} Trace Grocery</p>
             </div>
           </div>
 
-          {/* Feature points below mockup */}
           <div className='mt-6 space-y-2 w-full max-w-[300px]'>
             <div className='flex items-start gap-2 text-xs text-slate-600'>
               <div className='mt-0.5 bg-green-100 text-green-600 rounded-full p-0.5'>

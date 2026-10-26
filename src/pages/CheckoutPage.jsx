@@ -59,7 +59,6 @@ const CheckoutPage = () => {
     if (fetchAddress) fetchAddress()
   }, [])
 
-  // Auto-select first address if available
   useEffect(() => {
     if (addressList && addressList.length > 0 && selectAddress === null) {
       const activeIdx = addressList.findIndex(a => a.status !== false)
@@ -96,7 +95,6 @@ const CheckoutPage = () => {
 
   const grandTotal = totalPrice + deliveryCharge + handlingCharge - couponDiscount
 
-  // Helper to extract variant and price for each item
   const getItemDetails = (item) => {
     let price = Number(item.productId?.price || 0)
     let mrp = Number(item.productId?.mrp || price)
@@ -199,7 +197,6 @@ const CheckoutPage = () => {
     }
   }
 
-  // Free delivery threshold (₹3,500 based on the design mockup)
   const FREE_DELIVERY_THRESHOLD = 3500
   const deliveryProgress = Math.min(100, Math.round((totalPrice / FREE_DELIVERY_THRESHOLD) * 100))
 
@@ -207,10 +204,8 @@ const CheckoutPage = () => {
     <div className='bg-[#f4f7fb] min-h-screen pb-16 pt-3'>
       <div className='container mx-auto px-4 max-w-7xl'>
 
-        {/* ─── Top Stepper ──────────────────────────────────────────────── */}
         <div className='w-full max-w-xl mx-auto pt-2 pb-6 px-4'>
           <div className='flex items-center justify-between relative'>
-            {/* Step 1: Cart */}
             <div className='flex flex-col items-center z-10'>
               <div className='w-8 h-8 rounded-full border border-gray-300 bg-white text-gray-700 font-semibold text-xs flex items-center justify-center shadow-xs'>
                 1
@@ -218,10 +213,8 @@ const CheckoutPage = () => {
               <span className='text-xs font-medium text-gray-600 mt-1.5'>Cart</span>
             </div>
 
-            {/* Line 1 -> 2 (Active Orange) */}
             <div className='flex-1 h-0.5 bg-orange-500 -mt-5 mx-1.5'></div>
 
-            {/* Step 2: Checkout (Active) */}
             <div className='flex flex-col items-center z-10'>
               <div className='w-8 h-8 rounded-full bg-orange-500 text-white font-bold text-xs flex items-center justify-center shadow-xs shadow-orange-300'>
                 2
@@ -229,10 +222,8 @@ const CheckoutPage = () => {
               <span className='text-xs font-bold text-orange-600 mt-1.5'>Checkout</span>
             </div>
 
-            {/* Line 2 -> 3 (Gray) */}
             <div className='flex-1 h-0.5 bg-gray-300 -mt-5 mx-1.5'></div>
 
-            {/* Step 3: Payment */}
             <div className='flex flex-col items-center z-10'>
               <div className='w-8 h-8 rounded-full border border-gray-300 bg-white text-gray-400 font-semibold text-xs flex items-center justify-center shadow-xs'>
                 3
@@ -240,10 +231,8 @@ const CheckoutPage = () => {
               <span className='text-xs font-medium text-gray-400 mt-1.5'>Payment</span>
             </div>
 
-            {/* Line 3 -> 4 (Gray) */}
             <div className='flex-1 h-0.5 bg-gray-300 -mt-5 mx-1.5'></div>
 
-            {/* Step 4: Complete */}
             <div className='flex flex-col items-center z-10'>
               <div className='w-8 h-8 rounded-full border border-gray-300 bg-white text-gray-400 font-semibold text-xs flex items-center justify-center shadow-xs'>
                 4
@@ -253,16 +242,12 @@ const CheckoutPage = () => {
           </div>
         </div>
 
-        {/* ─── Main 2-Column Content ─────────────────────────────────────── */}
         <div className='flex flex-col lg:flex-row gap-6 items-start justify-between'>
 
-          {/* Left Column (Address & Trust Info) */}
           <div className='w-full lg:flex-1 space-y-5'>
 
-            {/* Choose Delivery Address Section */}
             <div className='bg-white rounded-3xl p-6 sm:p-7 shadow-xs border border-gray-100'>
               
-              {/* Header */}
               <div className='flex items-center justify-between pb-5 border-b border-gray-100'>
                 <div className='flex items-center gap-3'>
                   <div className='w-8 h-8 rounded-full bg-orange-500 text-white font-bold flex items-center justify-center text-sm shrink-0 shadow-xs'>
@@ -287,7 +272,6 @@ const CheckoutPage = () => {
                 </button>
               </div>
 
-              {/* Address List */}
               <div className='space-y-4 pt-5'>
                 {addressList.length === 0 ? (
                   <div className='py-8 text-center text-gray-500'>
@@ -310,7 +294,6 @@ const CheckoutPage = () => {
                         }`}
                       >
                         <div className='flex items-start gap-3.5 sm:gap-4'>
-                          {/* Radio Button */}
                           <div className='pt-0.5 shrink-0'>
                             {isSelected ? (
                               <div className='w-5 h-5 rounded-full border-2 border-emerald-500 flex items-center justify-center'>
@@ -321,7 +304,6 @@ const CheckoutPage = () => {
                             )}
                           </div>
 
-                          {/* Address Details */}
                           <div className='flex-1 min-w-0 pr-12'>
                             <p className='font-bold text-gray-900 text-sm sm:text-base leading-snug'>
                               {address.address_line}
@@ -333,7 +315,6 @@ const CheckoutPage = () => {
                               {address.country || 'India'} - {address.pincode}
                             </p>
 
-                            {/* Mobile Number */}
                             {address.mobile && (
                               <p className='text-xs sm:text-sm font-semibold text-gray-700 mt-2 flex items-center gap-1.5'>
                                 <Smartphone size={15} className='text-gray-600 shrink-0' />
@@ -341,14 +322,12 @@ const CheckoutPage = () => {
                               </p>
                             )}
 
-                            {/* Estimated Delivery Badge */}
                             <div className='mt-3 inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-700 text-[11px] font-bold uppercase tracking-wider rounded-full border border-emerald-100'>
                               <span className='w-1.5 h-1.5 bg-emerald-500 rounded-full' />
                               <span>ESTIMATED DELIVERY: {getCheckoutDeliveryDate(address.pincode, totalCartQty).toUpperCase()}</span>
                             </div>
                           </div>
 
-                          {/* Edit Button */}
                           <button
                             type='button'
                             onClick={(e) => {
@@ -367,7 +346,6 @@ const CheckoutPage = () => {
                   })
                 )}
 
-                {/* Dashed Add Address Box */}
                 <div
                   onClick={() => setOpenAddress(true)}
                   className='border-2 border-dashed border-blue-200/90 bg-blue-50/30 hover:bg-blue-50/70 rounded-2xl py-4 flex items-center justify-center cursor-pointer transition text-blue-600 font-bold text-xs uppercase tracking-wider gap-1.5 mt-2'
@@ -378,7 +356,6 @@ const CheckoutPage = () => {
               </div>
             </div>
 
-            {/* Free Delivery Banner Card */}
             <div className='bg-emerald-50/70 border border-emerald-100 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4'>
               <div className='flex items-center gap-3.5'>
                 <div className='w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0'>
@@ -395,7 +372,6 @@ const CheckoutPage = () => {
                     }
                   </p>
                   
-                  {/* Progress Bar */}
                   <div className='w-full sm:w-72 md:w-80 h-2 bg-emerald-200/60 rounded-full overflow-hidden mt-2.5'>
                     <div 
                       className='h-full bg-emerald-500 rounded-full transition-all duration-500'
@@ -405,15 +381,12 @@ const CheckoutPage = () => {
                 </div>
               </div>
 
-              {/* Progress Count */}
               <div className='text-right shrink-0 sm:self-center font-bold text-xs sm:text-sm text-gray-800 pl-2'>
                 {DisplayPriceInRupees(totalPrice)} / {DisplayPriceInRupees(FREE_DELIVERY_THRESHOLD)}
               </div>
             </div>
 
-            {/* Trust Badges */}
             <div className='grid grid-cols-1 md:grid-cols-3 gap-3.5'>
-              {/* Badge 1 */}
               <div className='bg-white rounded-2xl border border-gray-100 p-4 shadow-2xs flex items-center gap-3.5'>
                 <div className='w-10 h-10 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center shrink-0'>
                   <ShieldCheck size={20} />
@@ -424,7 +397,6 @@ const CheckoutPage = () => {
                 </div>
               </div>
 
-              {/* Badge 2 */}
               <div className='bg-white rounded-2xl border border-gray-100 p-4 shadow-2xs flex items-center gap-3.5'>
                 <div className='w-10 h-10 rounded-full bg-orange-50 text-orange-500 flex items-center justify-center shrink-0'>
                   <Truck size={20} />
@@ -435,7 +407,6 @@ const CheckoutPage = () => {
                 </div>
               </div>
 
-              {/* Badge 3 */}
               <div className='bg-white rounded-2xl border border-gray-100 p-4 shadow-2xs flex items-center gap-3.5'>
                 <div className='w-10 h-10 rounded-full bg-orange-50 text-orange-500 flex items-center justify-center shrink-0'>
                   <Headphones size={20} />
@@ -449,10 +420,8 @@ const CheckoutPage = () => {
 
           </div>
 
-          {/* Right Column (Bill Summary) */}
           <div className='w-full lg:w-[410px] bg-white rounded-3xl p-6 sm:p-7 shadow-sm border border-gray-100 sticky top-24'>
             
-            {/* Header */}
             <div className='flex items-center justify-between pb-4 border-b border-gray-100'>
               <h3 className='text-xs font-extrabold text-gray-900 uppercase tracking-widest'>
                 Bill Summary
@@ -462,7 +431,6 @@ const CheckoutPage = () => {
               </span>
             </div>
 
-            {/* Cart Items List */}
             <div className='divide-y divide-gray-100 max-h-72 overflow-y-auto pr-1 py-2'>
               {cartItemsList.length === 0 ? (
                 <p className='text-xs text-gray-400 py-4 text-center'>Your cart is empty</p>
@@ -477,7 +445,6 @@ const CheckoutPage = () => {
 
                   return (
                     <div key={item._id || index} className='flex items-center gap-3 py-3'>
-                      {/* Product Thumbnail */}
                       <div className='w-14 h-14 rounded-xl bg-gray-50 border border-gray-100 p-1 flex items-center justify-center overflow-hidden shrink-0'>
                         {productImage ? (
                           <img
@@ -490,7 +457,6 @@ const CheckoutPage = () => {
                         )}
                       </div>
 
-                      {/* Product Details */}
                       <div className='flex-1 min-w-0'>
                         <h4 className='text-xs sm:text-sm font-bold text-gray-900 truncate'>
                           {productName}
@@ -505,7 +471,6 @@ const CheckoutPage = () => {
                         </p>
                       </div>
 
-                      {/* Product Pricing */}
                       <div className='text-right shrink-0'>
                         <p className='text-xs sm:text-sm font-bold text-gray-900'>
                           {DisplayPriceInRupees(itemTotal)}
@@ -522,16 +487,13 @@ const CheckoutPage = () => {
               )}
             </div>
 
-            {/* Calculations Breakdown */}
             <div className='border-t border-gray-100 pt-4 space-y-3'>
               
-              {/* Items Total */}
               <div className='flex justify-between items-center text-xs sm:text-sm font-medium'>
                 <span className='text-gray-700'>Items Total ({totalCartQty} items)</span>
                 <span className='text-gray-900 font-bold'>{DisplayPriceInRupees(totalPrice)}</span>
               </div>
 
-              {/* Discount / Coupon */}
               {couponDiscount > 0 && (
                 <div className='flex justify-between items-center text-xs sm:text-sm font-medium'>
                   <span className='text-gray-700'>
@@ -543,7 +505,6 @@ const CheckoutPage = () => {
                 </div>
               )}
 
-              {/* Delivery Charge */}
               <div className='flex justify-between items-center text-xs sm:text-sm font-medium'>
                 <span className='text-gray-700'>Delivery Charge</span>
                 <span>
@@ -555,7 +516,6 @@ const CheckoutPage = () => {
                 </span>
               </div>
 
-              {/* Handling Charge */}
               <div className='flex justify-between items-center text-xs sm:text-sm font-medium'>
                 <span className='text-gray-700'>Handling Charge</span>
                 <span className='text-gray-900 font-bold'>
@@ -563,7 +523,6 @@ const CheckoutPage = () => {
                 </span>
               </div>
 
-              {/* Grand Total */}
               <div className='border-t border-gray-100 pt-4'>
                 <p className='text-xs font-semibold text-gray-500'>Grand Total</p>
                 <p className='text-3xl font-extrabold text-gray-900 tracking-tight mt-1'>
@@ -573,7 +532,6 @@ const CheckoutPage = () => {
 
             </div>
 
-            {/* Action Buttons */}
             <div className='space-y-3 pt-6'>
               {selectAddress === null && (
                 <p className='text-rose-500 text-xs font-semibold text-center'>
@@ -581,7 +539,6 @@ const CheckoutPage = () => {
                 </p>
               )}
 
-              {/* Pay Online (Stripe) */}
               <button
                 type='button'
                 onClick={handleOnlinePayment}
@@ -597,7 +554,6 @@ const CheckoutPage = () => {
                 <ArrowRight size={16} />
               </button>
 
-              {/* Cash on Delivery */}
               <button
                 type='button'
                 onClick={handleCashOnDelivery}
@@ -619,7 +575,6 @@ const CheckoutPage = () => {
 
       </div>
 
-      {/* ─── Address Modals ───────────────────────────────────────────── */}
       {openAddress && (
         <AddAddress close={() => {
           setOpenAddress(false)

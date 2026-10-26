@@ -108,7 +108,6 @@ const CategoryWiseProductDisplay = ({ id, name, manualData }) => {
                     ))}
                 </div>
 
-                {/* Left/Right Floating Navigation Buttons */}
                 <div className='w-full left-0 right-0 container mx-auto px-2 absolute hidden lg:flex justify-between pointer-events-none'>
                     <button
                         onClick={handleScrollLeft}

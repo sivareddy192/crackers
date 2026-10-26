@@ -13,19 +13,16 @@
     <link rel="apple-touch-icon" href="/vite.jpg" />
     <link rel="canonical" href="https://tracly.in/" />
 
-    <!-- Open Graph Metadata -->
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Tracly" />
     <meta property="og:title" content="Tracly | Crackers &amp; Fireworks Online Store" />
     <meta property="og:description" content="Shop authentic festive crackers and fireworks online at Tracly with best prices, special offers, and safety instructions." />
     <meta property="og:url" content="https://tracly.in/" />
 
-    <!-- Twitter Metadata -->
     <meta name="twitter:card" content="summary" />
     <meta name="twitter:title" content="Tracly | Crackers &amp; Fireworks Online" />
     <meta name="twitter:description" content="Shop authentic celebration crackers and fireworks online at Tracly." />
 
-    <!-- High-priority DNS prefetch and preconnect to critical origins -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="preconnect" href="https://res.cloudinary.com" crossorigin />
@@ -33,75 +30,96 @@
     <link rel="preconnect" href="https://crackersbackend.vercel.app" crossorigin />
     <link rel="dns-prefetch" href="https://crackersbackend.vercel.app" />
 
-    <!-- LCP Banner Image Preload — dynamically injected from localStorage cache.
-         BannerDisplay.jsx saves the real first banner URL after first API fetch.
-         On repeat visits this gives instant LCP. On first visit, the inline
-         hero h1 text is the LCP element (already paints at ~0.8s).             -->
     <script>
       (function() {
         try {
-          var cached = localStorage.getItem('tracly_lcp_banner');
-          if (cached) {
-            var data = JSON.parse(cached);
-            var url = data.url;
-            if (url && url.startsWith('https://res.cloudinary.com')) {
-              var link = document.createElement('link');
-              link.rel = 'preload';
-              link.as = 'image';
-              link.setAttribute('fetchpriority', 'high');
-              link.href = url;
-              // Build responsive srcset from the cached URL pattern
-              var srcset = url.replace(/,w_\d+/, ',w_360') + ' 360w, ' +
-                           url.replace(/,w_\d+/, ',w_480') + ' 480w, ' +
-                           url.replace(/,w_\d+/, ',w_720') + ' 720w';
-              link.setAttribute('imagesrcset', srcset);
-              link.setAttribute('imagesizes', '100vw');
-              document.head.appendChild(link);
-            }
-          }
-        } catch(e) { /* ignore storage errors */ }
-      })();
-    </script>
-
-    <!-- Pre-warm the unified home feed API before React/Vite scripts execute -->
-    <script>
-      (function() {
-        try {
+          var path = window.location.pathname;
           var token = localStorage.getItem('accessToken');
           var headers = {};
           if (token) headers['Authorization'] = 'Bearer ' + token;
-          window.__TRACLY_PREFETCH__ = fetch(
-            'https://crackersbackend.vercel.app/api/product/home-feed',
-            {
-              method: 'GET',
-              headers: headers,
-              credentials: 'include',
-              priority: 'high'
+
+          if (path.indexOf('/product/') === 0) {
+            var parts = path.split('/').pop().split('-');
+            var pId = parts.pop();
+            if (pId && /^[a-f0-9]{24}$/i.test(pId)) {
+              try {
+                var cachedRaw = sessionStorage.getItem('trace_p_' + pId) || localStorage.getItem('trace_p_' + pId);
+                if (cachedRaw) {
+                  var p = JSON.parse(cachedRaw);
+                  var img = Array.isArray(p.image) ? p.image[0] : p.image;
+                  var imgUrl = typeof img === 'string' ? img : (img && (img.secure_url || img.url));
+                  if (imgUrl && imgUrl.indexOf('res.cloudinary.com') !== -1) {
+                    var l = document.createElement('link');
+                    l.rel = 'preload';
+                    l.as = 'image';
+                    l.setAttribute('fetchpriority', 'high');
+                    l.href = imgUrl.replace('/upload/', '/upload/f_auto,q_auto:good,c_limit,w_480/');
+                    document.head.appendChild(l);
+                  }
+                }
+              } catch(e) {}
+
+              window.__TRACLY_PRODUCT_PREFETCH__ = fetch(
+                'https://crackersbackend.vercel.app/api/product/get-product-details?productId=' + pId,
+                {
+                  method: 'GET',
+                  headers: headers,
+                  credentials: 'include',
+                  priority: 'high'
+                }
+              ).then(function(r) { return r.ok ? r.json() : null; }).catch(function() { return null; });
             }
-          ).then(function(r) {
-            return r.ok ? r.json() : null;
-          }).catch(function() {
-            return null;
-          });
+          } 
+          else if (path === '/' || path === '') {
+            try {
+              var cachedBanner = localStorage.getItem('tracly_lcp_banner');
+              if (cachedBanner) {
+                var bData = JSON.parse(cachedBanner);
+                if (bData.url && bData.url.indexOf('res.cloudinary.com') !== -1) {
+                  var bLink = document.createElement('link');
+                  bLink.rel = 'preload';
+                  bLink.as = 'image';
+                  bLink.setAttribute('fetchpriority', 'high');
+                  bLink.href = bData.url;
+                  var bBase = bData.url;
+                  bLink.setAttribute('imagesrcset',
+                    bBase.replace(/,w_\d+/, ',w_360') + ' 360w, ' +
+                    bBase.replace(/,w_\d+/, ',w_480') + ' 480w, ' +
+                    bBase.replace(/,w_\d+/, ',w_720') + ' 720w'
+                  );
+                  bLink.setAttribute('imagesizes', '100vw');
+                  document.head.appendChild(bLink);
+                }
+              }
+            } catch(e) {}
+
+            window.__TRACLY_PREFETCH__ = fetch(
+              'https://crackersbackend.vercel.app/api/product/home-feed',
+              {
+                method: 'GET',
+                headers: headers,
+                credentials: 'include',
+                priority: 'high'
+              }
+            ).then(function(r) { return r.ok ? r.json() : null; }).catch(function() { return null; });
+          }
         } catch(e) {
           window.__TRACLY_PREFETCH__ = null;
+          window.__TRACLY_PRODUCT_PREFETCH__ = null;
         }
       })();
     </script>
 
 
-    <!-- Non-render-blocking Google Fonts with print/media swap -->
     <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&family=Outfit:wght@700;800&display=swap" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&family=Outfit:wght@700;800&display=swap" media="print" onload="this.media='all'" />
     <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&family=Outfit:wght@700;800&display=swap" /></noscript>
 
-    <!-- Critical CSS for Instant Paint Shell -->
     <style>
       :root {
         --fire-primary: #ea580c;
         --fire-bg: #fffdfb;
       }
-      /* Prevent FOIT on custom fonts — show system fallback immediately */
       @font-face {
         font-family: 'Plus Jakarta Sans';
         font-style: normal;
@@ -115,7 +133,6 @@
         background-color: var(--fire-bg);
         color: #1e293b;
       }
-      /* Avoid scrollbar jank shift */
       html { overflow-y: scroll; scrollbar-gutter: stable; }
       .critical-shell-header {
         height: 72px;
@@ -157,7 +174,6 @@
         box-sizing: border-box;
         overflow: hidden;
       }
-      /* Ensure React's immediate fallback hero uses the exact same box model to prevent CLS */
       #root > .critical-shell-hero { contain: layout size; }
       @media (min-width: 1024px) {
         .critical-shell-header { height: 80px; }
@@ -166,7 +182,6 @@
       }
     </style>
 
-    <!-- Structured Data (JSON-LD) for SEO Rich Results -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -202,7 +217,6 @@
 
   <body>
     <div id="root">
-      <!-- Critical Instant FCP Shell (replaced when React mounts) -->
       <header class="critical-shell-header">
         <a href="/" class="critical-shell-brand" aria-label="Tracly">TRACLY</a>
         <div style="display:flex;gap:12px;align-items:center;">
@@ -210,12 +224,30 @@
           <div style="width:36px;height:36px;border-radius:50%;background:#f1f5f9;"></div>
         </div>
       </header>
-      <div class="critical-shell-hero">
+      <div id="product-shell" style="display:none;max-width:1440px;margin:80px auto 0;padding:12px 16px 24px;box-sizing:border-box;">
+        <div style="height:14px;width:160px;background:#f1f5f9;border-radius:4px;margin-bottom:16px;"></div>
+        <div style="display:grid;grid-template-columns:1fr;gap:20px;">
+          <div style="aspect-ratio:1/1;max-height:500px;border-radius:16px;background:rgba(255,247,237,0.4);border:1px solid #fed7aa;display:flex;align-items:center;justify-content:center;">
+            <div style="width:48px;height:48px;border-radius:50%;background:#ffedd5;"></div>
+          </div>
+          <div>
+            <span style="display:inline-block;padding:3px 10px;background:#ea580c;color:#fff;border-radius:999px;font-size:10px;font-weight:900;text-transform:uppercase;margin-bottom:8px;">Special Offer</span>
+            <h1 id="shell-product-title" style="font-size:clamp(22px,5vw,30px);font-weight:900;line-height:1.2;color:#0f172a;margin:0 0 12px 0;">Product Details</h1>
+            <div style="display:flex;gap:6px;margin-bottom:14px;">
+              <div style="width:70px;height:16px;background:#fef3c7;border-radius:4px;"></div>
+              <div style="width:40px;height:16px;background:#f1f5f9;border-radius:4px;"></div>
+            </div>
+            <div style="height:28px;width:100px;background:#f1f5f9;border-radius:6px;margin-bottom:16px;"></div>
+            <div style="height:44px;width:100%;max-width:280px;background:#ea580c;border-radius:12px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="home-shell" class="critical-shell-hero">
         <div class="critical-shell-banner">
           <p style="font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:0.18em;color:#ea580c;margin:0 0 10px 0;">
             🎆 Crackers &amp; fireworks for celebrations
           </p>
-          <!-- Largest element on first paint — Chrome LCP candidate -->
           <h1 id="shell-hero-heading" style="font-size:clamp(28px,6vw,52px);font-weight:900;line-height:1.08;color:#0f172a;margin:0 0 12px 0;letter-spacing:-0.02em;">
             Celebrate together.<br><span style="color:#ea580c;">Celebrate safely.</span>
           </h1>
@@ -228,6 +260,30 @@
           </a>
         </div>
       </div>
+
+      <script>
+        (function() {
+          try {
+            if (window.location.pathname.indexOf('/product/') === 0) {
+              var hs = document.getElementById('home-shell');
+              var ps = document.getElementById('product-shell');
+              if (hs) hs.style.display = 'none';
+              if (ps) {
+                ps.style.display = 'block';
+                var slugParts = window.location.pathname.split('/').pop().split('-');
+                slugParts.pop();
+                var rawName = slugParts.join(' ');
+                if (rawName) {
+                  var titleEl = document.getElementById('shell-product-title');
+                  if (titleEl) {
+                    titleEl.textContent = rawName.charAt(0).toUpperCase() + rawName.slice(1);
+                  }
+                }
+              }
+            }
+          } catch(e) {}
+        })();
+      </script>
     </div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

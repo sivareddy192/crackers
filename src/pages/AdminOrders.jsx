@@ -159,7 +159,6 @@ const AdminOrders = () => {
                         </div>
                     </div>
 
-                    {/* Progress Stepper */}
                     <div className="px-4 py-8 bg-gray-50/50 rounded-[2rem]">
                         <div className="flex items-center justify-between relative px-2">
                             <div className="absolute top-2 left-[10%] w-[80%] h-[2px] bg-gray-200 z-0"></div>
@@ -181,7 +180,6 @@ const AdminOrders = () => {
                     </div>
                 </div>
 
-                {/* Card Actions */}
                 <div className="p-8 flex items-center gap-3" onClick={(e) => e.stopPropagation()}>
                     <div className="flex-1 relative">
                         <select

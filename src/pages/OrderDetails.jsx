@@ -10,7 +10,6 @@ import Skeleton from '../components/Skeleton'
 import 'leaflet/dist/leaflet.css'
 import L from 'leaflet'
 
-// Fix for default marker icons in Leaflet with React
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
@@ -18,7 +17,6 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
 
-// Custom Icon for Delivery Boy
 const deliveryIcon = new L.Icon({
     iconUrl: 'https://cdn-icons-png.flaticon.com/512/2972/2972185.png',
     iconSize: [40, 40],
@@ -65,7 +63,6 @@ const OrderDetails = () => {
 
     useEffect(() => {
         fetchOrderDetails()
-        // Start polling for live tracking if order is active
         const interval = setInterval(fetchOrderDetails, 5000)
         return () => clearInterval(interval)
     }, [fetchOrderDetails])
@@ -118,7 +115,6 @@ const OrderDetails = () => {
                 </button>
 
                 <div className='bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100'>
-                    {/* Header Section */}
                     <div className='p-5 md:p-8 bg-white border-b border-gray-100'>
                         <div className='flex flex-col md:flex-row md:items-center justify-between gap-6'>
                             <div>
@@ -150,7 +146,6 @@ const OrderDetails = () => {
                             </div>
                         </div>
 
-                        {/* Status Stepper */}
                         <div className='mt-12 mb-6 relative px-2'>
                             <div className='absolute top-2.5 left-6 right-6 h-0.5 bg-gray-100 rounded-full'>
                                 <div 
@@ -185,7 +180,6 @@ const OrderDetails = () => {
                         </div>
                     </div>
 
-                    {/* LIVE TRACKING MAP SECTION */}
                     {mainOrder.deliveryBoyId && mainOrder.status !== 'Delivered' && (
                         <div className='p-5 md:p-8 bg-white border-b border-gray-100'>
                             <div className='flex items-center justify-between mb-6'>
@@ -211,7 +205,6 @@ const OrderDetails = () => {
                                 >
                                     <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
                                     
-                                    {/* Delivery Boy Marker */}
                                     {mainOrder.deliveryBoyId?.currentLatitude && (
                                         <Marker 
                                             position={[mainOrder.deliveryBoyId.currentLatitude, mainOrder.deliveryBoyId.currentLongitude]} 
@@ -221,7 +214,6 @@ const OrderDetails = () => {
                                         </Marker>
                                     )}
 
-                                    {/* Customer Destination Marker */}
                                     {(mainOrder.delivery_address?.latitude || mainOrder.address?.latitude) && (
                                         <Marker position={[
                                             mainOrder.delivery_address?.latitude || mainOrder.address?.latitude, 
@@ -245,13 +237,11 @@ const OrderDetails = () => {
                         </div>
                     )}
 
-                    {/* Order Items */}
                     <div className='p-5 md:p-8 bg-gray-50/30'>
                         <h2 className='text-[11px] font-black text-gray-400 uppercase tracking-[0.2em] mb-6'>Items in this order</h2>
                         <div className='space-y-3'>
                             {orders.map((item, idx) => (
                                 <div key={idx} className='bg-white p-3 rounded-2xl grid grid-cols-[64px_1fr_auto] items-center gap-4 border border-gray-100 shadow-sm hover:border-gray-200 transition-colors'>
-                                    {/* Image */}
                                     <div className='w-16 h-16 bg-gray-50 rounded-xl overflow-hidden flex items-center justify-center border border-gray-50 p-1'>
                                         <img 
                                             src={getImageUrl(item.product_details?.image || item.productId?.image)} 
@@ -260,7 +250,6 @@ const OrderDetails = () => {
                                         />
                                     </div>
                                     
-                                    {/* Name & Qty */}
                                     <div className='flex flex-col min-w-0'>
                                         <h3 className='font-black text-gray-900 text-[11px] md:text-sm leading-tight line-clamp-2 uppercase tracking-tight'>
                                             {item.product_details?.name}
@@ -271,7 +260,6 @@ const OrderDetails = () => {
                                         </p>
                                     </div>
 
-                                    {/* Price */}
                                     <div className='text-right pl-2'>
                                         <p className='text-sm md:text-base font-black text-gray-900 whitespace-nowrap'>
                                             ₹{item.subTotalAmt || item.totalAmt}
@@ -282,7 +270,6 @@ const OrderDetails = () => {
                         </div>
                     </div>
 
-                    {/* Footer Info */}
                     <div className='p-5 md:p-8 bg-white border-t border-gray-100 grid md:grid-cols-2 gap-8'>
                         <div>
                             <h2 className='text-[11px] font-black text-gray-400 uppercase tracking-[0.2em] mb-4'>Delivery Address</h2>

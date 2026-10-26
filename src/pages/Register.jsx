@@ -135,7 +135,6 @@ const Register = () => {
   return (
     <section className='w-full min-h-[80vh] flex items-center justify-center container mx-auto px-4 py-8'>
       <div className='bg-white my-4 w-full max-w-md mx-auto rounded-3xl p-8 border border-slate-200/80 shadow-xl shadow-slate-900/5 transition-all'>
-        {/* Brand Header */}
         <div className='flex flex-col items-center text-center mb-6'>
           <img src={image} alt="Trace" className='w-32 h-auto mb-3' />
           <h2 className='text-2xl font-black text-slate-900 tracking-tight font-heading'>Create Account</h2>
@@ -143,7 +142,6 @@ const Register = () => {
         </div>
 
         <form className='grid gap-4' onSubmit={handleSubmit}>
-          {/* Name */}
           <div className='space-y-1.5'>
             <label htmlFor='name' className='text-xs font-bold text-slate-700'>Full Name</label>
             <div className='bg-slate-50/70 border border-slate-200 rounded-2xl flex items-center px-3.5 focus-within:bg-white focus-within:border-indigo-500 focus-within:ring-3 focus-within:ring-indigo-500/15 transition-all'>
@@ -163,7 +161,6 @@ const Register = () => {
             </div>
           </div>
 
-          {/* Email */}
           <div className='space-y-1.5'>
             <label htmlFor='email' className='text-xs font-bold text-slate-700'>Email Address</label>
             <div className='bg-slate-50/70 border border-slate-200 rounded-2xl flex items-center px-3.5 focus-within:bg-white focus-within:border-indigo-500 focus-within:ring-3 focus-within:ring-indigo-500/15 transition-all'>
@@ -182,7 +179,6 @@ const Register = () => {
             </div>
           </div>
 
-          {/* Password */}
           <div className='space-y-1.5'>
             <label htmlFor='password' className='text-xs font-bold text-slate-700'>Password</label>
             <div className='bg-slate-50/70 border border-slate-200 rounded-2xl flex items-center px-3.5 focus-within:bg-white focus-within:border-indigo-500 focus-within:ring-3 focus-within:ring-indigo-500/15 transition-all'>
@@ -207,7 +203,6 @@ const Register = () => {
               </button>
             </div>
 
-            {/* Strength meter bar */}
             {data.password && (
               <div className="w-full h-1.5 bg-slate-100 rounded-full mt-2 overflow-hidden">
                 <div
@@ -230,7 +225,6 @@ const Register = () => {
             )}
           </div>
 
-          {/* Confirm Password */}
           <div className='space-y-1.5'>
             <label htmlFor='confirmPassword' className='text-xs font-bold text-slate-700'>Confirm Password</label>
             <div className='bg-slate-50/70 border border-slate-200 rounded-2xl flex items-center px-3.5 focus-within:bg-white focus-within:border-indigo-500 focus-within:ring-3 focus-within:ring-indigo-500/15 transition-all'>
@@ -262,7 +256,6 @@ const Register = () => {
             )}
           </div>
 
-          {/* Submit */}
           <button
             disabled={!valideValue || !isStrongPassword || loading}
             className={`w-full py-3.5 rounded-2xl font-extrabold text-xs uppercase tracking-wider transition-all active:scale-[0.98] shadow-md mt-2 ${

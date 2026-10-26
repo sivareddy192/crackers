@@ -74,7 +74,6 @@ const Loading = ({ type = 'grid' }) => {
     )
   }
 
-  // Default is 'grid'
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6 w-full animate-pulse py-6">
       {[...Array(6)].map((_, i) => (

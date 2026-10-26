@@ -78,7 +78,6 @@ const FestivalOfferAdmin = () => {
 
     return (
         <section className='flex flex-col min-h-screen bg-slate-50 dark:bg-neutral-950 pb-10'>
-            {/* Premium Navigation Header */}
             <div className='p-5 bg-white dark:bg-neutral-900 shadow-sm flex items-center justify-between border-b border-slate-200 dark:border-neutral-800 sticky top-0 z-20'>
                 <div className='flex flex-col'>
                     <div className='flex items-center gap-2 text-orange-600'>
@@ -96,7 +95,6 @@ const FestivalOfferAdmin = () => {
                 </button>
             </div>
 
-            {/* Dashboard Container */}
             <div className='p-6 flex-1 flex flex-col'>
                 {loading ? (
                     <Loading type="grid" />
@@ -121,14 +119,12 @@ const FestivalOfferAdmin = () => {
                                 key={offer._id} 
                                 className='bg-white dark:bg-neutral-900 rounded-2xl overflow-hidden border border-slate-200/70 dark:border-neutral-800 shadow-sm hover:shadow-xl hover:border-orange-200 dark:hover:border-orange-500/20 transition-all group relative flex flex-col h-full'
                             >
-                                {/* Active/Inactive Badge Overlay */}
                                 <div className='absolute top-3 right-3 z-10'>
                                     <span className={`text-[10px] font-black tracking-widest uppercase px-3 py-1 rounded-full shadow-sm border ${offer.isActive ? "bg-green-100 border-green-200 text-green-700 dark:bg-green-950/50 dark:border-green-800 dark:text-green-400" : "bg-slate-100 border-slate-200 text-slate-600 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-400"}`}>
                                         {offer.isActive ? "ACTIVE" : "INACTIVE"}
                                     </span>
                                 </div>
 
-                                {/* Offer Banner Display */}
                                 <div className='w-full aspect-video bg-slate-100 dark:bg-neutral-800 relative overflow-hidden shrink-0 border-b border-slate-100 dark:border-neutral-800'>
                                     {offer.image ? (
                                         <img
@@ -140,7 +136,6 @@ const FestivalOfferAdmin = () => {
                                         <div className='w-full h-full flex items-center justify-center text-slate-400'>No Image Loaded</div>
                                     )}
 
-                                    {/* Discount Overlay Ribbon */}
                                     {offer.discountPercent > 0 && (
                                         <div className='absolute bottom-3 left-3 bg-linear-to-r from-red-600 to-orange-600 text-white text-[10px] font-black uppercase tracking-widest px-3.5 py-1.5 rounded-lg shadow-md shadow-orange-500/20'>
                                             {offer.discountPercent}% OFF
@@ -148,7 +143,6 @@ const FestivalOfferAdmin = () => {
                                     )}
                                 </div>
 
-                                {/* Content Space */}
                                 <div className='p-5 flex flex-col flex-1 justify-between'>
                                     <div>
                                         <h4 className='font-black text-lg text-gray-900 dark:text-white tracking-tight leading-snug truncate' title={offer.title}>
@@ -176,7 +170,6 @@ const FestivalOfferAdmin = () => {
                                         </div>
                                     </div>
 
-                                    {/* 🚀 "One-Click Send to All Users Mail" Blast Action */}
                                     <div className='mt-5 border-t border-slate-100 dark:border-neutral-800 pt-4 flex flex-col'>
                                         <button
                                             onClick={() => handleTriggerEmailBlast(offer)}
@@ -192,7 +185,6 @@ const FestivalOfferAdmin = () => {
                                         </button>
                                     </div>
 
-                                    {/* Actions Footer */}
                                     <div className='flex gap-3 mt-4 border-t border-slate-100 dark:border-neutral-800 pt-4'>
                                         <button 
                                             onClick={() => {
@@ -222,7 +214,6 @@ const FestivalOfferAdmin = () => {
                 )}
             </div>
 
-            {/* Modal Overlays */}
             {openUpload && (
                 <UploadFestivalOffer 
                     close={() => setOpenUpload(false)} 

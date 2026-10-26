@@ -46,7 +46,6 @@ const AccountPrivacy = () => {
                     </p>
                 </div>
 
-                {/* Action Cards */}
                 <div className='mt-10 space-y-4'>
                     <button 
                         onClick={handleRequestDelete}

@@ -30,13 +30,11 @@ const AboutUs = lazy(() => import("../pages/AboutUs"));
 const TermsAndConditions = lazy(() => import("../pages/TermsAndConditions"));
 const ContactUs = lazy(() => import("../pages/ContactUs"));
 
-// Delivery portal
 const DeliveryBoyDashboard = lazy(() => import("../pages/DeliveryBoyDashboard"));
 const DeliveryLayout = lazy(() => import("../components/DeliveryLayout"));
 const DeliveryNotifications = lazy(() => import("../pages/DeliveryNotifications"));
 const DeliveryOrderDetails = lazy(() => import("../pages/DeliveryOrderDetails"));
 
-// Admin portal
 const AdminLayout = lazy(() => import("../components/AdminLayout"));
 const AdminDashboard = lazy(() => import("../pages/AdminDashboard"));
 const Category = lazy(() => import("../pages/Category"));
@@ -53,7 +51,6 @@ const AdminOrderDetails = lazy(() => import("../pages/AdminOrderDetails"));
 const FestivalOfferAdmin = lazy(() => import("../pages/FestivalOfferAdmin"));
 
 const router = createBrowserRouter([
-    // ─── Delivery Boy Portal ───────────────────────────────────────────────
     {
         path: "delivery-portal",
         element: <DeliveryLayout />,
@@ -64,7 +61,6 @@ const router = createBrowserRouter([
         ]
     },
 
-    // ─── Admin Portal ──────────────────────────────────────────────────────
     {
         path: "admin-portal",
         element: <AdminLayout />,
@@ -88,7 +84,6 @@ const router = createBrowserRouter([
         ]
     },
 
-    // ─── Customer / User App ───────────────────────────────────────────────
     {
         path: "/",
         element: <App />,
@@ -110,7 +105,6 @@ const router = createBrowserRouter([
             { path: "shop-now",        element: <ShopNowRedirect /> },
             { path: "user-menu",       element: <UserMenuMobile /> },
 
-            // User dashboard (profile, orders, address only)
             {
                 path: "dashboard",
                 element: <Dashboard />,
@@ -126,7 +120,6 @@ const router = createBrowserRouter([
                 ]
             },
 
-            // Product browsing
             {
                 path: ":category",
                 children: [

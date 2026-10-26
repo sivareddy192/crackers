@@ -7,11 +7,8 @@ const BannerDisplay = ({ banners = [] }) => {
     const [currentImage, setCurrentImage] = useState(0)
     const [cachedBanners] = useState(() => {
         try {
-            const rawSession = sessionStorage.getItem('tracly_cached_banners')
-            if (rawSession) return JSON.parse(rawSession)
-            const rawLocal = localStorage.getItem('tracly_cached_banners')
-            if (rawLocal) return JSON.parse(rawLocal)
-            return null
+            const raw = sessionStorage.getItem('tracly_cached_banners')
+            return raw ? JSON.parse(raw) : null
         } catch {
             return null
         }
@@ -20,28 +17,20 @@ const BannerDisplay = ({ banners = [] }) => {
     const displayBanners = banners.length > 0 ? banners : (cachedBanners || [])
     const currentSlide = Math.min(currentImage, Math.max(displayBanners.length - 1, 0))
 
-    // Persist banners in session and local storage for zero-delay paint on return/refresh
     useEffect(() => {
         if (banners.length > 0) {
             try {
-                const slice = banners.slice(0, 3)
-                sessionStorage.setItem('tracly_cached_banners', JSON.stringify(slice))
-                localStorage.setItem('tracly_cached_banners', JSON.stringify(slice))
+                sessionStorage.setItem('tracly_cached_banners', JSON.stringify(banners.slice(0, 3)))
 
-                // Save the first banner's mobile image URL to localStorage so the inline
-                // script in index.html can inject a <link rel="preload"> on next page load,
-                // enabling near-instant LCP on repeat visits.
                 const firstBanner = banners[0]
                 const firstMobileImage = firstBanner?.imageMobile || firstBanner?.imageDesktop
                 if (firstMobileImage) {
-                    // Use the getImageUrl transform for the width used in <img src={}>
                     const lcpUrl = getImageUrl(firstMobileImage, { width: 480, quality: 70 })
                     if (lcpUrl && lcpUrl.startsWith('https://res.cloudinary.com')) {
                         localStorage.setItem('tracly_lcp_banner', JSON.stringify({ url: lcpUrl, ts: Date.now() }))
                     }
                 }
             } catch {
-                // Ignore storage quota errors
             }
         }
     }, [banners])
@@ -55,7 +44,6 @@ const BannerDisplay = ({ banners = [] }) => {
         }
     }, [displayBanners.length])
 
-    // Immediate fallback hero with identical geometry to eliminate CLS and achieve sub-second LCP
     if (displayBanners.length === 0) {
         return (
             <div className='home-banner relative w-full px-3 pt-1 lg:px-0 lg:pt-0'>
@@ -146,7 +134,6 @@ const BannerDisplay = ({ banners = [] }) => {
                     }
                 </div>
 
-                {/* Animated Indicator Pills */}
                 {displayBanners.length > 1 && (
                     <div className='absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 z-10 bg-black/25 backdrop-blur-md px-3 py-1.5 rounded-full'>
                         {
@@ -165,7 +152,6 @@ const BannerDisplay = ({ banners = [] }) => {
                 {
                     displayBanners.length > 1 && (
                         <>
-                            {/* Navigation Buttons */}
                             <button 
                                 onClick={() => setCurrentImage(prev => (prev - 1 + displayBanners.length) % displayBanners.length)}
                                 aria-label="Previous banner"

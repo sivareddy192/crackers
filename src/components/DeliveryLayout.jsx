@@ -51,10 +51,8 @@ const DeliveryLayout = () => {
         <div className="trace-fire-theme min-h-screen bg-[#f4f6f9] flex flex-col">
             <Toaster />
 
-            {/* Top Nav Bar */}
             <header className="bg-white border-b border-gray-100 sticky top-0 z-50 shadow-sm">
                 <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-                    {/* Brand */}
                     <Link to="/delivery-portal/dashboard" className="flex items-center gap-3 hover:opacity-80 transition-opacity cursor-pointer">
                         <div className="w-10 h-10 bg-green-600 rounded-2xl flex items-center justify-center shadow-lg shadow-green-100">
                             <FaMotorcycle className="text-white text-lg" />
@@ -68,7 +66,6 @@ const DeliveryLayout = () => {
                         </div>
                     </Link>
 
-                    {/* Right side */}
                     <div className="flex items-center gap-3">
                         <Link 
                             to="/delivery-portal/notifications"
@@ -78,7 +75,6 @@ const DeliveryLayout = () => {
                             <span className="absolute top-2.5 right-2.5 w-2.5 h-2.5 bg-red-500 border-2 border-white rounded-full"></span>
                         </Link>
 
-                        {/* Avatar + Name */}
                         <div className="hidden sm:flex items-center gap-2 bg-gray-50 border border-gray-100 rounded-2xl px-3 py-2">
                             <div className="w-7 h-7 bg-linear-to-br from-green-400 to-green-600 rounded-xl flex items-center justify-center text-white text-xs font-black shadow-sm">
                                 {initial}
@@ -89,7 +85,6 @@ const DeliveryLayout = () => {
                             </span>
                         </div>
 
-                        {/* Logout */}
                         <button
                             onClick={handleLogout}
                             className="flex items-center gap-1.5 bg-red-50 hover:bg-red-100 text-red-600 font-black text-[10px] uppercase tracking-widest px-4 py-2.5 rounded-2xl transition-all border border-red-100"
@@ -103,7 +98,6 @@ const DeliveryLayout = () => {
                 </div>
             </header>
 
-            {/* Page Content */}
             <main className="flex-1">
                 <Outlet />
             </main>

@@ -215,7 +215,6 @@ const EditProductAdmin = ({ close, data: propsData, fetchProductData }) => {
         category: (data.category || []).map(c => (typeof c === 'string' ? c : c._id)),
         subCategory: (data.subCategory || []).map(c => (typeof c === 'string' ? c : c._id)),
         relatedProducts: (data.relatedProducts || []).map(p => (typeof p === 'string' ? p : p._id)),
-        // Also update main product fields from the first variant for consistency
         unit: data.variants[0]?.unit,
         price: data.variants[0]?.price,
         mrp: data.variants[0]?.mrp,
@@ -243,7 +242,6 @@ const EditProductAdmin = ({ close, data: propsData, fetchProductData }) => {
   return (
     <section className='fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-300'>
       <div className='bg-white w-full max-w-4xl rounded-[2.5rem] shadow-2xl flex flex-col max-h-[90vh] overflow-hidden border border-white/20'>
-        {/* Header */}
         <div className='p-8 flex items-center justify-between border-b border-gray-50'>
           <div>
             <h2 className='text-2xl font-black text-gray-900 uppercase tracking-tighter'>Edit Product</h2>
@@ -259,7 +257,6 @@ const EditProductAdmin = ({ close, data: propsData, fetchProductData }) => {
 
         <form className='flex-1 overflow-y-auto p-8 no-scrollbar' onSubmit={handleSubmit}>
           <div className='grid lg:grid-cols-2 gap-10'>
-            {/* Left Column: Basic Info & Media */}
             <div className='space-y-8'>
               <div className='space-y-4'>
                 <label className='text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1'>Basic Information</label>
@@ -359,7 +356,6 @@ const EditProductAdmin = ({ close, data: propsData, fetchProductData }) => {
               </div>
             </div>
 
-            {/* Right Column: Categories & Variants */}
             <div className='space-y-8'>
               <div className='grid grid-cols-2 gap-4'>
                 <div className='space-y-4'>
@@ -417,7 +413,6 @@ const EditProductAdmin = ({ close, data: propsData, fetchProductData }) => {
                 </div>
               </div>
 
-              {/* Variants Section */}
               <div className='space-y-4'>
                 <div className='flex items-center justify-between ml-1'>
                   <label className='text-[10px] font-black text-gray-400 uppercase tracking-widest'>Product Units / Variants</label>
@@ -505,7 +500,6 @@ const EditProductAdmin = ({ close, data: propsData, fetchProductData }) => {
                 </div>
               </div>
 
-              {/* Related Products Selection */}
               <div className='space-y-4'>
                 <label className='text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1'>Related Products</label>
                 <div className='relative'>
@@ -556,7 +550,6 @@ const EditProductAdmin = ({ close, data: propsData, fetchProductData }) => {
             </div>
           </div>
 
-          {/* More Details (Custom Fields) */}
           <div className='mt-10 pt-10 border-t border-gray-50 space-y-6'>
             <div className='flex items-center justify-between'>
                 <label className='text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1'>Extended Attributes</label>
@@ -604,7 +597,6 @@ const EditProductAdmin = ({ close, data: propsData, fetchProductData }) => {
           </div>
         </form>
 
-        {/* Footer */}
         <div className='p-8 bg-gray-50/50 border-t border-gray-50 flex justify-end gap-4'>
             <button 
                 type="button"

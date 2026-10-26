@@ -78,7 +78,6 @@ const SearchPage = () => {
     <section className='bg-gray-50 min-h-screen'>
       <div className='container mx-auto p-4 lg:p-8'>
         
-        {/* Results Header */}
         <div className='mb-8 px-2'>
             <div className='flex items-center gap-3 mb-2'>
                 <span className='w-8 h-1 bg-green-500 rounded-full'></span>
@@ -102,19 +101,16 @@ const SearchPage = () => {
         >
           <div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 lg:gap-8'>
                 
-                {/* Initial Loading Skeletons */}
                 {loading && data.length === 0 && (
                     loadingArrayCard.map((_,index)=>(
                         <ProductLoading key={"loadingsearchpage"+index}/>
                     ))
                 )}
 
-                {/* Search Results */}
                 {data.map((p,index)=>(
                     <ProductBox data={p} key={p?._id+"searchProduct"+index}/>
                 ))}
 
-                {/* Infinite Loading Skeletons */}
                 {loading && data.length > 0 && (
                     new Array(5).fill(null).map((_,index)=>(
                         <ProductLoading key={"loadingmoresearch"+index}/>
@@ -123,7 +119,6 @@ const SearchPage = () => {
           </div>
         </InfiniteScroll>
 
-        {/* No Results UI */}
         {!data[0] && !loading && (
             <div className='flex flex-col items-center justify-center py-24 bg-white rounded-[3rem] border-2 border-dashed border-gray-100 mt-8 shadow-sm'>
                 <div className='w-40 h-40 bg-gray-50 rounded-full flex items-center justify-center mb-8'>

@@ -6,7 +6,7 @@ import Axios from '../utils/Axios';
 import SummaryApi from '../common/SummaryApi';
 import toast from 'react-hot-toast';
 import AxiosToastError from '../utils/AxiosToastError';
-import { setAllCategory } from '../store/productSlice'; // ✅ Ensure this exists in your Redux slice
+import { setAllCategory } from '../store/productSlice';
 
 const EditSubCategory = ({ close, data, fetchData }) => {
   const [subCategoryData, setSubCategoryData] = useState({
@@ -19,7 +19,6 @@ const EditSubCategory = ({ close, data, fetchData }) => {
   const dispatch = useDispatch();
   const allCategory = useSelector(state => state.product.allCategory);
 
-  //Fetch categories if not already loaded
   useEffect(() => {
     const fetchAllCategories = async () => {
       try {
@@ -91,7 +90,6 @@ const EditSubCategory = ({ close, data, fetchData }) => {
         </div>
 
         <form className='my-3 grid gap-3' onSubmit={handleSubmitSubCategory}>
-          {/* Name */}
           <div className='grid gap-1'>
             <label htmlFor='name'>Name</label>
             <input
@@ -104,7 +102,6 @@ const EditSubCategory = ({ close, data, fetchData }) => {
             />
           </div>
 
-          {/* Image */}
           <div className='grid gap-1'>
             <p>Image</p>
             <div className='flex flex-col lg:flex-row items-center gap-3'>
@@ -134,11 +131,9 @@ const EditSubCategory = ({ close, data, fetchData }) => {
             </div>
           </div>
 
-          {/* Select Category */}
           <div className='grid gap-1'>
             <label>Select Category</label>
             <div className='border focus-within:border-green-200 rounded'>
-              {/* Display selected categories */}
               <div className='flex flex-wrap gap-2 p-2'>
                 {subCategoryData.category.length === 0 && (
                   <p className='text-sm text-gray-400'>No categories selected</p>
@@ -160,7 +155,6 @@ const EditSubCategory = ({ close, data, fetchData }) => {
                 ))}
               </div>
 
-              {/* Dropdown */}
               <select
                 id="categorySelect"
                 name="category"
@@ -174,7 +168,7 @@ const EditSubCategory = ({ close, data, fetchData }) => {
                       category: [...prev.category, categoryDetails]
                     }));
                   }
-                  e.target.value = ""; // reset dropdown
+                  e.target.value = "";
                 }}
               >
                 <option value="">Select Category</option>
@@ -187,7 +181,6 @@ const EditSubCategory = ({ close, data, fetchData }) => {
             </div>
           </div>
 
-          {/* Submit Button */}
           <button
             type='submit'
             className={`px-4 py-2 border mt-2 rounded

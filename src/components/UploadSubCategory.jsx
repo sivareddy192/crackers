@@ -98,7 +98,6 @@ const UploadSubCategoryModel = ({ close, fetchData }) => {
         <form className='my-3 grid gap-3' onSubmit={handleSubmitSubCategory}>
 
 
-          {/* Name */}
           <div className='grid gap-1'>
             <label htmlFor='name'>Name</label>
             <input
@@ -111,7 +110,6 @@ const UploadSubCategoryModel = ({ close, fetchData }) => {
           </div>
 
 
-          {/* Image Upload */}
           <div className='grid gap-1'>
             <p>Image</p>
             <div className='flex flex-col lg:flex-row items-center gap-3'>
@@ -140,7 +138,6 @@ const UploadSubCategoryModel = ({ close, fetchData }) => {
           </div>
 
 
-          {/* Category Selection */}
           <div className='grid gap-1'>
             <label>Select Category</label>
 
@@ -154,7 +151,6 @@ const UploadSubCategoryModel = ({ close, fetchData }) => {
                   >
                     <span>{cat.name}</span>
 
-                    {/* FIX: div replaced with button */}
                     <button
                       type='button'
                       className='cursor-pointer hover:text-red-600'
@@ -195,7 +191,6 @@ const UploadSubCategoryModel = ({ close, fetchData }) => {
           </div>
 
 
-          {/* Submit */}
           <button
             className={`px-4 py-2 border rounded font-semibold
               ${subCategoryData?.name && subCategoryData?.image && subCategoryData?.category[0]
