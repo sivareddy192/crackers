@@ -13,7 +13,7 @@ const AddToCartButton = ({ data, variant = "green-pill" }) => {
     const cartItem = useSelector(state => state.cartItem.cart)
     const [isAvailableCart, setIsAvailableCart] = useState(false)
     const [qty, setQty] = useState(0)
-    const [cartItemDetails, setCartItemsDetails] = useState()
+    const [cartItemDetails, setCartItemsDetails] = useState(null)
     const isHomeOutline = variant === "home-outline"
     const cartToastId = `cart-item-${data?._id || data?.id}-${(data?.unit || "").replace(/\s+/g, "").toLowerCase()}`
 
@@ -38,29 +38,34 @@ const AddToCartButton = ({ data, variant = "green-pill" }) => {
     }
 
     useEffect(() => {
-        if (!data || !cartItem) return;
+        if (!data || !cartItem) {
+            setIsAvailableCart(prev => prev === false ? prev : false)
+            setQty(prev => prev === 0 ? prev : 0)
+            setCartItemsDetails(prev => prev === null ? prev : null)
+            return
+        }
 
-        const productId = data._id || data.id;
-        if (!productId) return;
-        const normalize = (str) => (str || "").toString().replace(/\s+/g, "").toLowerCase();
-        const currentUnit = normalize(data.unit);
+        const productId = data._id || data.id
+        if (!productId) return
+        const normalize = (str) => (str || "").toString().replace(/\s+/g, "").toLowerCase()
+        const currentUnit = normalize(data.unit)
         const product = cartItem.find(item => {
-            const itemProductId = item.productId?._id || item.productId?.id || item.productId;
-            const idMatch = itemProductId?.toString() === productId?.toString();
-            const unitMatch = normalize(item.unit) === currentUnit;
-            return idMatch && unitMatch;
-        });
+            const itemProductId = item.productId?._id || item.productId?.id || item.productId
+            const idMatch = itemProductId?.toString() === productId?.toString()
+            const unitMatch = normalize(item.unit) === currentUnit
+            return idMatch && unitMatch
+        })
 
         if (product) {
-            setIsAvailableCart(true)
-            setQty(product.quantity)
-            setCartItemsDetails(product)
+            setIsAvailableCart(prev => prev === true ? prev : true)
+            setQty(prev => prev === product.quantity ? prev : product.quantity)
+            setCartItemsDetails(prev => (prev?._id === product._id && prev?.quantity === product.quantity) ? prev : product)
         } else {
-            setIsAvailableCart(false)
-            setQty(0)
-            setCartItemsDetails(null)
+            setIsAvailableCart(prev => prev === false ? prev : false)
+            setQty(prev => prev === 0 ? prev : 0)
+            setCartItemsDetails(prev => prev === null ? prev : null)
         }
-    }, [data, data.unit, cartItem])
+    }, [data?._id, data?.id, data?.unit, cartItem])
 
     const increaseQty = async (e) => {
         e.preventDefault()

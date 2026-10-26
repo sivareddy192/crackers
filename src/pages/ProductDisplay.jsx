@@ -89,10 +89,6 @@ const ProductDisplay = () => {
   const fetchProductDetails = useCallback(async () => {
     if (!productId) return
     try {
-      if (!data && !initialProduct) {
-        setLoading(true)
-      }
-
       let product = null
 
       if (window.__TRACLY_PRODUCT_PREFETCH__) {
@@ -131,13 +127,13 @@ const ProductDisplay = () => {
         })
       }
     } catch (error) {
-      if (!data && !initialProduct) {
+      if (!getCachedProduct(productId)) {
         AxiosToastError(error)
       }
     } finally {
       setLoading(false)
     }
-  }, [productId, data, initialProduct])
+  }, [productId])
 
   const fetchReviews = useCallback(async () => {
     if (!productId) return
@@ -165,6 +161,8 @@ const ProductDisplay = () => {
         }
       })
       setLoading(false)
+    } else {
+      setLoading(true)
     }
     fetchProductDetails()
 
@@ -172,7 +170,7 @@ const ProductDisplay = () => {
       fetchReviews()
     }, 1500)
     return () => clearTimeout(timer)
-  }, [productId, fetchProductDetails, fetchReviews, location.state])
+  }, [productId, fetchProductDetails, fetchReviews])
 
   useEffect(() => {
     const purchaseElement = purchaseRef.current
@@ -182,7 +180,7 @@ const ProductDisplay = () => {
     }, { threshold: 0 })
     observer.observe(purchaseElement)
     return () => observer.disconnect()
-  }, [loading, data])
+  }, [loading, Boolean(data)])
 
   useEffect(() => {
     const onKeyDown = event => {
