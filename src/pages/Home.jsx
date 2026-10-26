@@ -20,8 +20,21 @@ const Home = () => {
   const categoryData = useSelector(state => state.product.allCategory)
   const user = useSelector(state => state.user)
 
-  const [homeFeed, setHomeFeed] = useState(null)
-  const [loadingHomeFeed, setLoadingHomeFeed] = useState(true)
+  const [homeFeed, setHomeFeed] = useState(() => {
+    try {
+      const cached = sessionStorage.getItem('tracly_home_feed')
+      return cached ? JSON.parse(cached) : null
+    } catch {
+      return null
+    }
+  })
+  const [loadingHomeFeed, setLoadingHomeFeed] = useState(() => {
+    try {
+      return !sessionStorage.getItem('tracly_home_feed')
+    } catch {
+      return true
+    }
+  })
   const [activeProductFilter, setActiveProductFilter] = useState("all")
 
   const dispatch = useDispatch()
@@ -65,11 +78,28 @@ const Home = () => {
 
     const fetchHomeFeed = async () => {
       try {
-        const response = await Axios({ ...SummaryApi.getHomeFeed, signal: controller.signal })
-        const feed = response.data?.data
+        let feed = null
 
-        if (!response.data?.success || !feed) {
-          throw new Error(response.data?.message || "Unable to load homepage data.")
+        // 🚀 1. Consume the pre-warm prefetch started in index.html <head>
+        if (window.__TRACLY_PREFETCH__) {
+          try {
+            const prefetchData = await window.__TRACLY_PREFETCH__
+            window.__TRACLY_PREFETCH__ = null // consume once
+            if (prefetchData?.success && prefetchData?.data) {
+              feed = prefetchData.data
+            }
+          } catch {
+            window.__TRACLY_PREFETCH__ = null
+          }
+        }
+
+        // 2. Fall back to standard Axios request if prefetch wasn't available
+        if (!feed) {
+          const response = await Axios({ ...SummaryApi.getHomeFeed, signal: controller.signal })
+          feed = response.data?.data
+          if (!response.data?.success || !feed) {
+            throw new Error(response.data?.message || "Unable to load homepage data.")
+          }
         }
 
         if (!isMounted) return
@@ -78,7 +108,14 @@ const Home = () => {
         const subCategories = [...(feed.subCategories || [])].sort((a, b) => a.name.localeCompare(b.name))
         dispatch(setAllCategory(categories))
         dispatch(setAllSubCategory(subCategories))
-        setHomeFeed({ ...feed, categories, subCategories })
+        const fullFeed = { ...feed, categories, subCategories }
+        setHomeFeed(fullFeed)
+
+        try {
+          sessionStorage.setItem('tracly_home_feed', JSON.stringify(fullFeed))
+        } catch {
+          // ignore quota limits
+        }
       } catch (error) {
         if (error?.code === "ERR_CANCELED" || !isMounted) return
 
