@@ -260,27 +260,68 @@ const ProductDisplay = () => {
               <h1 className="font-heading text-2xl font-black leading-tight tracking-tight text-slate-950 sm:text-3xl">
                 {slugTitle}
               </h1>
+              {/* Rating row skeleton */}
               <div className="mt-3 flex items-center gap-2">
-                <div className="h-4 w-28 rounded bg-slate-100" />
+                <div className="h-4 w-24 rounded bg-slate-100 animate-pulse" />
+                <div className="h-4 w-16 rounded bg-slate-100 animate-pulse" />
               </div>
+              {/* Price row skeleton */}
               <div className="mt-4 flex items-center gap-3">
-                <div className="h-8 w-24 rounded bg-slate-200" />
+                <div className="h-9 w-28 rounded bg-slate-200 animate-pulse" />
+                <div className="h-5 w-16 rounded bg-slate-100 animate-pulse" />
+                <div className="h-5 w-12 rounded-full bg-emerald-100 animate-pulse" />
               </div>
-              <div className="mt-5 space-y-2">
-                <div className="h-3.5 w-full rounded bg-slate-100" />
-                <div className="h-3.5 w-4/5 rounded bg-slate-100" />
+              {/* Description skeleton */}
+              <div className="mt-4 space-y-2">
+                <div className="h-3.5 w-full rounded bg-slate-100 animate-pulse" />
+                <div className="h-3.5 w-[95%] rounded bg-slate-100 animate-pulse" />
+                <div className="h-3.5 w-4/5 rounded bg-slate-100 animate-pulse" />
+                <div className="h-3.5 w-3/5 rounded bg-slate-100 animate-pulse" />
               </div>
-              <div className="mt-6">
-                <div className="h-11 w-full max-w-[280px] rounded-xl bg-orange-500" />
+              {/* Details feature grid skeleton */}
+              <div className="mt-5 grid grid-cols-2 gap-2.5">
+                {[1,2].map(i => (
+                  <div key={i} className="flex items-center gap-2.5">
+                    <div className="h-9 w-9 shrink-0 rounded-full bg-orange-50 animate-pulse" />
+                    <div className="space-y-1.5 flex-1">
+                      <div className="h-3 w-16 rounded bg-slate-200 animate-pulse" />
+                      <div className="h-2.5 w-12 rounded bg-slate-100 animate-pulse" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {/* Variant skeleton */}
+              <div className="mt-5">
+                <div className="h-3 w-14 rounded bg-slate-200 animate-pulse mb-2" />
+                <div className="flex gap-2">
+                  {[1,2].map(i => <div key={i} className="h-12 w-20 rounded-xl border border-slate-200 bg-slate-50 animate-pulse" />)}
+                </div>
               </div>
             </div>
 
             <div className="hidden lg:block">
-              <div className="rounded-2xl border border-slate-200 bg-slate-50/50 p-5">
-                <div className="h-6 w-32 rounded bg-slate-200 mb-4" />
-                <div className="h-4 w-full rounded bg-slate-100 mb-2" />
-                <div className="h-4 w-3/4 rounded bg-slate-100 mb-6" />
-                <div className="h-11 w-full rounded-xl bg-orange-600" />
+              <div className="rounded-2xl border border-orange-200 bg-white p-4 sm:p-5">
+                {/* Price header */}
+                <div className="mb-4 flex items-baseline gap-2">
+                  <div className="h-9 w-28 rounded bg-slate-200 animate-pulse" />
+                  <div className="h-5 w-16 rounded bg-slate-100 animate-pulse" />
+                </div>
+                {/* Add to cart button */}
+                <div className="h-10 w-full rounded-xl bg-indigo-600 animate-pulse mb-2.5" />
+                {/* Buy Now button */}
+                <div className="h-11 w-full rounded-xl border border-orange-300 bg-white animate-pulse" />
+                {/* Info rows */}
+                <div className="mt-5 space-y-4 border-t border-slate-100 pt-4">
+                  {[1,2,3,4].map(i => (
+                    <div key={i} className="flex items-center gap-3">
+                      <div className="h-10 w-10 shrink-0 rounded-full bg-slate-100 animate-pulse" />
+                      <div className="space-y-1.5 flex-1">
+                        <div className="h-3.5 w-20 rounded bg-slate-200 animate-pulse" />
+                        <div className="h-3 w-28 rounded bg-slate-100 animate-pulse" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
@@ -545,11 +586,15 @@ const ProductDisplay = () => {
                 onClick={() => setActiveTab(tab)}
                 className={`shrink-0 border-b-2 px-1 py-3 text-xs font-extrabold transition sm:text-sm ${activeTab === tab ? "border-orange-500 text-orange-600" : "border-transparent text-slate-600 hover:text-slate-900"}`}
               >
-                {tab}{tab === "Reviews" && reviews.length > 0 ? ` (${reviews.length})` : ""}
+                {/* Use fixed-width container for review count to prevent tab bar width shift */}
+                {tab}
+                <span className="inline-block min-w-[2ch]">
+                  {tab === "Reviews" && reviews.length > 0 ? ` (${reviews.length})` : ""}
+                </span>
               </button>
             ))}
           </div>
-          <div className="min-h-36 py-5">
+          <div className="min-h-[160px] py-5">
             {activeTab === "Description" && (
               <p className="max-w-4xl whitespace-pre-line text-sm leading-6 text-slate-600">
                 {data.description || "Product details will be added soon."}
