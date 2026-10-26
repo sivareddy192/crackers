@@ -5,7 +5,7 @@ import Axios from '../utils/Axios';
 import SummaryApi from '../common/SummaryApi';
 import AxiosToastError from '../utils/AxiosToastError';
 import { Link, useNavigate } from 'react-router-dom';
-import image from "../assets/image.png";
+import image from "../assets/trace-logo.avif";
 import { FiLock, FiMail, FiUser } from 'react-icons/fi';
 
 const Register = () => {

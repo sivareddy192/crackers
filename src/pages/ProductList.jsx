@@ -8,7 +8,7 @@ import ProductBox from '../components/ProductBox'
 import ProductLoading from '../components/ProductLoading'
 import { useSelector } from 'react-redux'
 import { valideURLConvert } from '../utils/valideURLConvert'
-import monkey from "../assets/monkey-2.jpg"
+import monkey from "../assets/monkey-2.avif"
 
 const ProductList = () => {
   const [data, setData] = useState([])

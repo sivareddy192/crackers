@@ -233,7 +233,15 @@ const ProductDisplay = () => {
                   aria-pressed={activeImage === index}
                   className={`h-[62px] w-[62px] shrink-0 overflow-hidden rounded-xl border-2 bg-white p-1 transition sm:h-[72px] sm:w-[72px] ${activeImage === index ? "border-orange-500" : "border-slate-200 hover:border-orange-200"}`}
                 >
-                  <img src={getImageUrl(image)} alt="" className="h-full w-full object-contain" />
+                  <img
+                    src={getImageUrl(image, { width: 120, quality: 75 })}
+                    alt=""
+                    width="72"
+                    height="72"
+                    loading="lazy"
+                    decoding="async"
+                    className="h-full w-full object-contain"
+                  />
                 </button>
               ))}
             </div>
@@ -255,7 +263,16 @@ const ProductDisplay = () => {
                     className="flex h-full w-full min-w-full snap-center items-center justify-center p-4 sm:p-8"
                     aria-label={`Zoom ${data.name}, image ${index + 1}`}
                   >
-                    <img src={getImageUrl(image)} alt={`${data.name} ${index + 1}`} className="h-full w-full object-contain" />
+                    <img
+                      src={getImageUrl(image, { width: 640, quality: 80 })}
+                      alt={`${data.name} ${index + 1}`}
+                      width="500"
+                      height="500"
+                      loading={index === 0 ? "eager" : "lazy"}
+                      fetchPriority={index === 0 ? "high" : "auto"}
+                      decoding="async"
+                      className="h-full w-full object-contain"
+                    />
                   </button>
                 )) : (
                   <div className="flex h-full w-full items-center justify-center text-sm text-slate-400">No product image</div>
@@ -539,7 +556,7 @@ const ProductDisplay = () => {
             <MotionImage
               initial={{ scale: 0.96 }}
               animate={{ scale: 1 }}
-              src={getImageUrl(images[activeImage])}
+              src={getImageUrl(images[activeImage], { width: 1200, quality: 85 })}
               alt={data.name}
               onClick={event => event.stopPropagation()}
               className="max-h-[88vh] max-w-[90vw] object-contain"

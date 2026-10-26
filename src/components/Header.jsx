@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react'
-import image from "../assets/image.png"
+import logoAvif from "../assets/trace-logo.avif"
+import logoPng from "../assets/trace-logo.png"
 import Search from './Search'
 import { Link, useNavigate } from 'react-router-dom'
 import { FaCartShopping } from "react-icons/fa6";
@@ -43,7 +44,7 @@ const Header = () => {
   }
 
   const handleMobileUser = () => {
-    if (!user._id) {
+    if (!user?._id) {
       navigate('/login')
       return
     }
@@ -56,8 +57,19 @@ const Header = () => {
         <div className='flex items-center justify-between h-14 lg:h-20 gap-4'>
 
           {/* Logo Section */}
-          <Link to={"/"} className='shrink-0 transition-transform active:scale-95 flex items-center'>
-            <img src={image} className='w-[90px] sm:w-24 lg:w-36 h-auto transition-all duration-300 hover:brightness-105' alt='Trace Logo' />
+          <Link to={"/"} aria-label="Tracly Home" className='shrink-0 transition-transform active:scale-95 flex items-center'>
+            <picture>
+              <source srcSet={logoAvif} type="image/avif" />
+              <img
+                src={logoPng}
+                width="144"
+                height="72"
+                className='w-[90px] sm:w-24 lg:w-36 h-auto transition-all duration-300 hover:brightness-105'
+                alt='Tracly Logo'
+                fetchPriority="high"
+                decoding="async"
+              />
+            </picture>
           </Link>
 
           {/* Desktop Search */}
@@ -74,9 +86,9 @@ const Header = () => {
                 type='button'
                 onClick={() => navigate('/cart')}
                 aria-label={`Open cart${totalQty ? `, ${totalQty} items` : ''}`}
-                className='relative flex h-9 w-9 items-center justify-center text-slate-900'
+                className='relative flex h-9 w-9 items-center justify-center text-slate-900 cursor-pointer'
               >
-                <FaCartShopping size={21} />
+                <FaCartShopping size={21} aria-hidden="true" />
                 {totalQty > 0 && (
                   <span className='absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-orange-500 px-1 text-[9px] font-black text-white ring-2 ring-white'>
                     {totalQty > 99 ? '99+' : totalQty}
@@ -84,19 +96,22 @@ const Header = () => {
                 )}
               </button>
               <button 
+                type="button"
                 onClick={handleMobileUser} 
                 aria-label="User Account"
                 className='rounded-full p-1 text-slate-800 transition-transform active:scale-90 cursor-pointer'
               >
                 {user?._id && user?.avatar ? (
                   <img
-                    src={getImageUrl(user.avatar)}
-                    alt={user.name}
-                    className='w-9 h-9 rounded-full object-cover ring-2 ring-indigo-500/40 shadow-xs'
+                    src={getImageUrl(user.avatar, { width: 80, quality: 75 })}
+                    alt={user.name || 'User'}
+                    width="36"
+                    height="36"
+                    className='w-9 h-9 rounded-full object-cover ring-2 ring-orange-500/40 shadow-xs'
                   />
                 ) : (
                   <div className='w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 ring-1 ring-slate-200'>
-                    <FaRegUserCircle size={22} />
+                    <FaRegUserCircle size={22} aria-hidden="true" />
                   </div>
                 )}
               </button>
@@ -113,9 +128,9 @@ const Header = () => {
                 type='button'
                 onClick={() => navigate('/cart')}
                 aria-label={`Open cart${totalQty ? `, ${totalQty} items` : ''}`}
-                className='relative flex h-11 w-11 items-center justify-center rounded-full text-slate-900 transition-colors hover:bg-orange-50 hover:text-orange-600 active:scale-95'
+                className='relative flex h-11 w-11 items-center justify-center rounded-full text-slate-900 transition-colors hover:bg-orange-50 hover:text-orange-600 active:scale-95 cursor-pointer'
               >
-                <FaCartShopping size={23} />
+                <FaCartShopping size={23} aria-hidden="true" />
                 {totalQty > 0 && (
                   <span className='absolute right-0 top-0 flex h-4 min-w-4 items-center justify-center rounded-full bg-orange-500 px-1 text-[9px] font-black text-white ring-2 ring-white'>
                     {totalQty > 99 ? '99+' : totalQty}
@@ -135,8 +150,10 @@ const Header = () => {
                   >
                     {user.avatar ? (
                       <img
-                        alt={user.name}
-                        src={getImageUrl(user.avatar)}
+                        alt={user.name || 'User'}
+                        src={getImageUrl(user.avatar, { width: 80, quality: 75 })}
+                        width="44"
+                        height="44"
                         className='h-full w-full rounded-full object-cover'
                       />
                     ) : (
@@ -161,8 +178,9 @@ const Header = () => {
                   </div>
                 ) : (
                   <button
+                    type="button"
                     onClick={redirectToLoginPage}
-                    className='bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white font-extrabold text-xs uppercase tracking-wider px-5 py-2.5 rounded-xl transition-all shadow-md shadow-indigo-600/20 active:scale-95 cursor-pointer'
+                    className='bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-extrabold text-xs uppercase tracking-wider px-5 py-2.5 rounded-xl transition-all shadow-md shadow-orange-500/20 active:scale-95 cursor-pointer'
                   >
                     Login
                   </button>

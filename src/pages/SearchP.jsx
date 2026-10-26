@@ -6,7 +6,7 @@ import AxiosToastError from '../utils/AxiosToastError'
 import ProductBox from '../components/ProductBox'
 import InfiniteScroll from 'react-infinite-scroll-component'
 import { useLocation } from 'react-router-dom'
-import monkey from '../assets/monkey-2.jpg'
+import monkey from '../assets/monkey-2.avif'
 
 const SearchPage = () => {
   const [data,setData] = useState([])

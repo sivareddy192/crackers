@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react"
-import { useSelector } from "react-redux"
+import { useEffect, useState, useMemo, lazy, Suspense } from "react"
+import { useDispatch, useSelector } from "react-redux"
 import { useNavigate } from "react-router-dom"
 import { getImageUrl } from "../utils/getImageUrl"
 import Skeleton from "../components/Skeleton"
@@ -8,95 +8,97 @@ import toast from "react-hot-toast"
 import Axios from "../utils/Axios"
 import SummaryApi from "../common/SummaryApi"
 import BannerDisplay from "../components/BannerDisplay"
-import WelcomeOffersPopup from "../components/WelcomeOffersPopup"
 import { HiSparkles } from "react-icons/hi2"
 import { FaCrown, FaHeadset, FaLock, FaTruckFast } from "react-icons/fa6"
 import ProductBox from "../components/ProductBox"
 import AxiosToastError from "../utils/AxiosToastError"
+import { setAllCategory, setAllSubCategory } from "../store/productSlice"
+
+const WelcomeOffersPopup = lazy(() => import("../components/WelcomeOffersPopup"))
 
 const Home = () => {
-  const loadingCategory = useSelector(state => state.product.loadingCategory)
   const categoryData = useSelector(state => state.product.allCategory)
+  const user = useSelector(state => state.user)
 
-  const [welcomeCoupon, setWelcomeCoupon] = useState(null)
-  const [festivalOffers, setFestivalOffers] = useState([])
-  const [featuredProducts, setFeaturedProducts] = useState([])
-  const [loadingFeatured, setLoadingFeatured] = useState(false)
+  const [homeFeed, setHomeFeed] = useState(null)
+  const [loadingHomeFeed, setLoadingHomeFeed] = useState(true)
   const [activeProductFilter, setActiveProductFilter] = useState("all")
 
+  const dispatch = useDispatch()
   const navigate = useNavigate()
 
-  const shouldShowTopBanner = !!welcomeCoupon;
+  const welcomeCoupon = homeFeed?.welcomeCoupon
+  const festivalOffers = homeFeed?.festivalOffers || []
+  const featuredProducts = homeFeed?.featuredProducts || []
+  const isCategoryLoading = loadingHomeFeed && categoryData.length === 0
+  const shouldShowTopBanner = !!welcomeCoupon
 
   useEffect(() => {
-    if (!categoryData.length) return undefined
-
     let isMounted = true
-    const fetchFeaturedProducts = async () => {
+    const controller = new AbortController()
+
+    const hydrateCatalogFallback = async () => {
+      const [categoryResult, subCategoryResult] = await Promise.allSettled([
+        Axios({ ...SummaryApi.getCategory, signal: controller.signal }),
+        Axios({ ...SummaryApi.getSubCategory, signal: controller.signal })
+      ])
+
+      if (!isMounted) return false
+
+      let recovered = false
+      if (categoryResult.status === "fulfilled" && categoryResult.value.data?.success) {
+        const categories = [...(categoryResult.value.data.data || [])]
+          .sort((a, b) => a.name.localeCompare(b.name))
+        dispatch(setAllCategory(categories))
+        recovered = true
+      }
+
+      if (subCategoryResult.status === "fulfilled" && subCategoryResult.value.data?.success) {
+        const subCategories = [...(subCategoryResult.value.data.data || [])]
+          .sort((a, b) => a.name.localeCompare(b.name))
+        dispatch(setAllSubCategory(subCategories))
+        recovered = true
+      }
+
+      return recovered
+    }
+
+    const fetchHomeFeed = async () => {
       try {
-        setLoadingFeatured(true)
-        const responses = await Promise.all(
-          categoryData.slice(0, 6).map(category =>
-            Axios({
-              ...SummaryApi.getProductByCategory,
-              data: { id: category._id }
-            })
-          )
-        )
+        const response = await Axios({ ...SummaryApi.getHomeFeed, signal: controller.signal })
+        const feed = response.data?.data
+
+        if (!response.data?.success || !feed) {
+          throw new Error(response.data?.message || "Unable to load homepage data.")
+        }
 
         if (!isMounted) return
-        const products = new Map()
-        responses.forEach(response => {
-          if (response.data?.success && Array.isArray(response.data.data)) {
-            response.data.data.forEach(product => products.set(product._id, product))
-          }
-        })
-        setFeaturedProducts(Array.from(products.values()).slice(0, 18))
+
+        const categories = [...(feed.categories || [])].sort((a, b) => a.name.localeCompare(b.name))
+        const subCategories = [...(feed.subCategories || [])].sort((a, b) => a.name.localeCompare(b.name))
+        dispatch(setAllCategory(categories))
+        dispatch(setAllSubCategory(subCategories))
+        setHomeFeed({ ...feed, categories, subCategories })
       } catch (error) {
-        if (isMounted) AxiosToastError(error)
+        if (error?.code === "ERR_CANCELED" || !isMounted) return
+
+        const recovered = await hydrateCatalogFallback()
+        if (!recovered && isMounted) AxiosToastError(error)
       } finally {
-        if (isMounted) setLoadingFeatured(false)
+        if (isMounted) {
+          setLoadingHomeFeed(false)
+        }
       }
     }
 
-    fetchFeaturedProducts()
+    fetchHomeFeed()
     return () => {
       isMounted = false
+      controller.abort()
     }
-  }, [categoryData])
+  }, [dispatch])
 
-  useEffect(() => {
-    let isMounted = true
-    const fetchCampaigns = async () => {
-      try {
-        const [couponRes, festivalRes] = await Promise.allSettled([
-          Axios(SummaryApi.coupon_list),
-          Axios(SummaryApi.festivalOffer.get)
-        ])
-
-        if (!isMounted) return
-
-        if (couponRes.status === "fulfilled" && couponRes.value?.data?.success) {
-          const welcome = couponRes.value.data.coupons?.find(c => c.isFirstOrderOnly && c.isActive)
-          setWelcomeCoupon(welcome || null)
-        }
-
-        if (festivalRes.status === "fulfilled" && festivalRes.value?.data?.success) {
-          const activeFestivals = festivalRes.value.data.data?.filter(o => o.isActive) || []
-          setFestivalOffers(activeFestivals)
-        }
-      } catch (error) {
-        console.error("Error loading home campaigns:", error)
-      }
-    }
-
-    fetchCampaigns()
-    return () => {
-      isMounted = false
-    }
-  }, [])
-
-  const filteredProducts = (() => {
+  const filteredProducts = useMemo(() => {
     if (activeProductFilter === "offers") {
       return featuredProducts.filter(product => Number(product.discount) > 0)
     }
@@ -106,11 +108,19 @@ const Home = () => {
       )
     }
     return featuredProducts
-  })()
+  }, [activeProductFilter, featuredProducts])
 
   return (
     <section className="home-page min-h-screen bg-white transition-colors duration-300">
-      <WelcomeOffersPopup />
+      {/* Primary Semantic H1 for SEO & Accessibility */}
+      <h1 className="sr-only">Tracly — Crackers &amp; Fireworks Online Store | Safe Celebrations</h1>
+
+      {/* Conditionally load Welcome Popup only for signed-in users */}
+      {user?._id && (
+        <Suspense fallback={null}>
+          <WelcomeOffersPopup />
+        </Suspense>
+      )}
 
       {/* 1. Dynamic Top Trending Promo Strip */}
       {shouldShowTopBanner && (
@@ -121,28 +131,28 @@ const Home = () => {
           }}
           className="bg-gradient-to-r from-amber-500 via-orange-500 to-rose-600 text-white py-2.5 px-4 text-center text-[11px] md:text-xs font-black tracking-wider uppercase flex items-center justify-center gap-2 cursor-pointer transition-all hover:brightness-105 select-none relative shadow-xs"
         >
-          <IoSparklesSharp className="animate-bounce text-amber-200" />
+          <IoSparklesSharp className="animate-bounce text-amber-200" aria-hidden="true" />
           <span>🔥 SPECIAL OFFER: GET {welcomeCoupon.discountPercent}% OFF YOUR FIRST ORDER! USE CODE: <strong className="underline font-extrabold ml-1 bg-white/20 px-2 py-0.5 rounded-md">{welcomeCoupon.code}</strong> 🎁 (TAP TO COPY)</span>
         </div>
       )}
       
       {/* Banner Carousel Section */}
       <div className="relative group">
-        <BannerDisplay />
+        <BannerDisplay banners={homeFeed?.banners || []} loading={loadingHomeFeed} />
       </div>
 
       <div className="home-benefits container mx-auto grid grid-cols-4 border-y border-slate-100 bg-orange-50/40 px-1.5 py-3 lg:px-10 lg:py-4">
         {[
-          { icon: <FaCrown className="shrink-0 text-xl text-orange-500 lg:text-2xl" aria-hidden="true" />, title: "Crackers & Fireworks", detail: "Browse celebration products" },
-          { icon: <FaLock className="shrink-0 text-xl text-orange-500 lg:text-2xl" aria-hidden="true" />, title: "Safe Celebrations", detail: "Read our fireworks safety tips" },
-          { icon: <FaTruckFast className="shrink-0 text-xl text-orange-500 lg:text-2xl" aria-hidden="true" />, title: "Order Online", detail: "Delivery options at checkout" },
-          { icon: <FaHeadset className="shrink-0 text-xl text-orange-500 lg:text-2xl" aria-hidden="true" />, title: "Customer Support", detail: "Help with orders and products" }
+          { icon: <FaCrown className="shrink-0 text-xl text-orange-600 lg:text-2xl" aria-hidden="true" />, title: "Crackers & Fireworks", detail: "Browse celebration products" },
+          { icon: <FaLock className="shrink-0 text-xl text-orange-600 lg:text-2xl" aria-hidden="true" />, title: "Safe Celebrations", detail: "Read our fireworks safety tips" },
+          { icon: <FaTruckFast className="shrink-0 text-xl text-orange-600 lg:text-2xl" aria-hidden="true" />, title: "Order Online", detail: "Delivery options at checkout" },
+          { icon: <FaHeadset className="shrink-0 text-xl text-orange-600 lg:text-2xl" aria-hidden="true" />, title: "Customer Support", detail: "Help with orders and products" }
         ].map(benefit => (
           <div key={benefit.title} className="flex flex-col items-center justify-center gap-1 px-0.5 py-1 text-center lg:flex-row lg:gap-3 lg:px-2 lg:py-2 lg:text-left lg:border-r lg:border-slate-200 last:border-r-0">
             {benefit.icon}
             <div>
               <p className="text-[9px] font-extrabold leading-tight text-slate-900 sm:text-[10px] lg:text-sm">{benefit.title}</p>
-              <p className="hidden text-[10px] font-medium leading-tight text-slate-500 sm:block lg:text-xs">{benefit.detail}</p>
+              <p className="hidden text-[10px] font-semibold leading-tight text-slate-600 sm:block lg:text-xs">{benefit.detail}</p>
             </div>
           </div>
         ))}
@@ -152,7 +162,7 @@ const Home = () => {
       {festivalOffers.length > 0 && (
         <div className="container mx-auto px-4 mt-8 lg:mt-12 relative z-10">
           <div className="flex items-center gap-2 mb-4 lg:mb-6">
-             <HiSparkles className="w-6 h-6 text-amber-500 animate-pulse" />
+             <HiSparkles className="w-6 h-6 text-amber-500 animate-pulse" aria-hidden="true" />
              <h2 className="font-black text-xl lg:text-3xl text-slate-900 tracking-tight uppercase font-heading">
                Festive Special Deals
              </h2>
@@ -177,8 +187,14 @@ const Home = () => {
                 >
                    {offer.image && (
                       <img 
-                        src={offer.image} 
-                        alt={offer.title}
+                        src={getImageUrl(offer.image, { width: 640, quality: 75 })}
+                        srcSet={`${getImageUrl(offer.image, { width: 360, quality: 75 })} 360w, ${getImageUrl(offer.image, { width: 640, quality: 75 })} 640w`}
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                        alt={offer.title || "Festive Offer"}
+                        width="640"
+                        height="360"
+                        loading="lazy"
+                        decoding="async"
                         className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
                       />
                    )}
@@ -224,15 +240,17 @@ const Home = () => {
             </h2>
           </div>
           <button
+            type="button"
             onClick={() => navigate("/categories")}
-            className="text-xs lg:text-sm font-extrabold text-orange-600 hover:text-orange-700 transition-colors"
+            aria-label="View all categories"
+            className="text-xs lg:text-sm font-extrabold text-orange-700 hover:text-orange-800 transition-colors"
           >
             View all <span aria-hidden="true">→</span>
           </button>
         </div>
 
         <div className="grid grid-cols-4 gap-2 sm:gap-3 lg:gap-4">
-          {loadingCategory
+          {isCategoryLoading
             ? new Array(4).fill(null).map((_, index) => (
                 <div key={index} className="flex flex-col gap-2">
                     <Skeleton className="home-category-image w-full aspect-square rounded-xl border border-slate-200/70 lg:aspect-[2/1]" />
@@ -248,8 +266,14 @@ const Home = () => {
                 >
                   <div className="home-category-image w-full aspect-square bg-orange-50/50 rounded-xl flex items-center justify-center overflow-hidden border border-orange-200/80 group-hover:border-orange-400 group-hover:shadow-md group-hover:shadow-orange-500/10 transition-all duration-300 group-hover:-translate-y-0.5 lg:aspect-[2/1]">
                     <img
-                      src={getImageUrl(cat.image)}
+                      src={getImageUrl(cat.image, { width: 180, quality: 75 })}
+                      srcSet={`${getImageUrl(cat.image, { width: 120, quality: 75 })} 120w, ${getImageUrl(cat.image, { width: 180, quality: 75 })} 180w`}
+                      sizes="(max-width: 640px) 25vw, 180px"
                       alt={cat.name}
+                      width="180"
+                      height="180"
+                      loading="lazy"
+                      decoding="async"
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                     />
                   </div>
@@ -268,8 +292,10 @@ const Home = () => {
               Featured Products
           </h2>
           <button
+            type="button"
             onClick={() => navigate("/products")}
-            className="text-[10px] sm:text-xs lg:text-sm font-extrabold text-orange-600 hover:text-orange-700 transition-colors"
+            aria-label="View all featured products"
+            className="text-[10px] sm:text-xs lg:text-sm font-extrabold text-orange-700 hover:text-orange-800 transition-colors"
           >
             View all <span aria-hidden="true">→</span>
           </button>
@@ -282,6 +308,7 @@ const Home = () => {
             { id: "offers", label: "Offers" }
           ].map(filter => (
             <button
+              type="button"
               key={filter.id}
               onClick={() => setActiveProductFilter(filter.id)}
               className={`shrink-0 rounded-full px-4 py-2 text-[10px] sm:text-xs font-extrabold transition-colors ${
@@ -296,16 +323,16 @@ const Home = () => {
         </div>
 
         <div className="home-featured-products grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3.5">
-          {loadingFeatured && new Array(6).fill(null).map((_, index) => (
-            <div key={`featured-loading-${index}`} className="h-72 rounded-2xl bg-slate-100 animate-pulse" />
+          {loadingHomeFeed && categoryData.length === 0 && new Array(6).fill(null).map((_, index) => (
+            <div key={`featured-loading-${index}`} className="aspect-[1/1.3] w-full rounded-2xl bg-slate-100 animate-pulse" />
           ))}
-          {!loadingFeatured && filteredProducts.slice(0, 6).map(product => (
+          {filteredProducts.slice(0, 6).map(product => (
             <ProductBox key={product._id} data={product} />
           ))}
         </div>
-        {!loadingFeatured && filteredProducts.length === 0 && (
+        {!loadingHomeFeed && filteredProducts.length === 0 && (
           <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 py-10 text-center">
-            <p className="text-sm font-semibold text-slate-500">
+            <p className="text-sm font-semibold text-slate-600">
               {activeProductFilter === "offers" ? "No offers available right now." : "Products will appear here soon."}
             </p>
           </div>

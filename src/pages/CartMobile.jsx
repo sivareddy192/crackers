@@ -22,7 +22,7 @@ import { DisplayPriceInRupees } from "../utils/DisplayPriceInRupees"
 import { getImageUrl } from "../utils/getImageUrl"
 import { getDiscountPercent } from "../utils/PriceWithDiscount"
 import { valideURLConvert } from "../utils/valideURLConvert"
-import imageEmpty from "../assets/empty_cart.webp"
+import imageEmpty from "../assets/empty_cart.avif"
 import toast from "react-hot-toast"
 
 const FREE_DELIVERY_THRESHOLD = 199

@@ -7,7 +7,7 @@ import { FaCaretRight, FaCheckCircle, FaPercentage } from "react-icons/fa";
 import { useSelector } from 'react-redux'
 import AddToCartButton from './AddToCartButton'
 import { getDiscountPercent } from '../utils/PriceWithDiscount'
-import imageEmpty from '../assets/empty_cart.webp'
+import imageEmpty from '../assets/empty_cart.avif'
 import toast from 'react-hot-toast'
 import Axios from '../utils/Axios'
 import SummaryApi from '../common/SummaryApi'

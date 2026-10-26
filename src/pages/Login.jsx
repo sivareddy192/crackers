@@ -8,7 +8,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import fetchUserDetails from '../utils/fetchUserDetails';
 import { useDispatch } from 'react-redux';
 import { setUserDetails } from '../store/userSlice';
-import image from "../assets/image.png";
+import image from "../assets/trace-logo.avif";
 import { FiLock, FiMail } from 'react-icons/fi';
 
 const Login = () => {

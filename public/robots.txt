@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /admin-portal/
+Disallow: /delivery-portal/
+Disallow: /dashboard/
+
+Sitemap: https://tracly.in/sitemap.xml

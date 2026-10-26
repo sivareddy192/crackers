@@ -1,7 +1,7 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
 import isAdmin from '../utils/isAdmin'
-import monkey from "../assets/monkey-2.jpg"
+import monkey from "../assets/monkey-2.avif"
 
 const AdminPermision = ({ children }) => {
 

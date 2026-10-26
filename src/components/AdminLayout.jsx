@@ -15,7 +15,7 @@ import {
 } from 'react-icons/fa'
 import { MdOutlineCategory, MdOutlineDashboardCustomize } from 'react-icons/md'
 import { RiCoupon2Line } from 'react-icons/ri'
-import traceLogo from '../assets/image.png'
+import traceLogo from '../assets/trace-logo.avif'
 
 const navItems = [
     { to: '/admin-portal/dashboard',       icon: <FaChartLine />,              label: 'Dashboard' },
