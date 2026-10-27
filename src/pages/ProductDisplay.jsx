@@ -544,8 +544,8 @@ const ProductDisplay = () => {
               <div className="flex items-center gap-3">
                 <span className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-50 text-orange-600"><FaTruckFast /></span>
                 <div>
-                  <p className="text-sm font-extrabold text-slate-900">Free Delivery</p>
-                  <p className="text-xs text-slate-500">Delivery options at checkout</p>
+                  <p className="text-sm font-extrabold text-slate-900">Delivery: ₹500 - ₹1,000</p>
+                  <p className="text-xs text-slate-500">Pay after delivery • Exact price via Gmail</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">

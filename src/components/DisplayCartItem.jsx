@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useGlobalContext } from '../provider/GlobalProvider'
 import { DisplayPriceInRupees } from '../utils/DisplayPriceInRupees'
 import { FaCaretRight, FaCheckCircle, FaPercentage } from "react-icons/fa";
+import { FaTruckFast } from "react-icons/fa6";
 import { useSelector } from 'react-redux'
 import AddToCartButton from './AddToCartButton'
 import { getDiscountPercent } from '../utils/PriceWithDiscount'
@@ -145,13 +146,19 @@ const DisplayCartItem = ({ close }) => {
         }
     }
 
+    const MIN_ORDER_VALUE = 4500;
+
     const redirectToCheckoutPage = () => {
-        if (user?._id) {
-            navigate("/checkout")
-            close && close()
-        } else {
+        if (!user?._id) {
             toast("Please Login")
+            return
         }
+        if (totalPrice < MIN_ORDER_VALUE) {
+            toast.error(`Minimum order amount is ₹${MIN_ORDER_VALUE.toLocaleString('en-IN')}. Please add ₹${Number(MIN_ORDER_VALUE - totalPrice).toLocaleString('en-IN')} more to proceed.`)
+            return
+        }
+        navigate("/checkout")
+        close && close()
     }
 
     return createPortal(
@@ -185,19 +192,51 @@ const DisplayCartItem = ({ close }) => {
                         </div>
                     ) : (
                         <>
-                            <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-emerald-950/20 dark:to-green-950/20 p-4 rounded-2xl border border-green-100 dark:border-green-900/30 flex items-center gap-3">
-                                <div className='bg-green-600 p-2 rounded-lg text-white'>
-                                    <FaCheckCircle />
-                                </div>
-                                <div>
-                                    <p className="font-bold text-green-800 dark:text-green-300 text-sm">
-                                        {deliveryCharge === 0 ? "Yay! Free Delivery Unlocked" : "Add ₹" + (199 - totalPrice) + " more for Free Delivery"}
+                            {totalPrice < MIN_ORDER_VALUE ? (
+                                <div className="bg-amber-50 dark:bg-amber-950/30 p-4 rounded-2xl border border-amber-200 dark:border-amber-900/40 space-y-2">
+                                    <div className="flex items-center gap-2.5">
+                                        <div className='bg-amber-500 p-2 rounded-lg text-white shrink-0'>
+                                            <FaTruckFast />
+                                        </div>
+                                        <div className="flex-1">
+                                            <div className="flex items-center justify-between">
+                                                <p className="font-extrabold text-amber-900 dark:text-amber-200 text-xs uppercase tracking-wider">
+                                                    Minimum Order: ₹4,500
+                                                </p>
+                                                <span className="text-[11px] font-bold text-amber-800 dark:text-amber-300">
+                                                    {DisplayPriceInRupees(totalPrice)} / {DisplayPriceInRupees(MIN_ORDER_VALUE)}
+                                                </span>
+                                            </div>
+                                            <p className="text-amber-700 dark:text-amber-300 text-xs mt-0.5 font-medium">
+                                                Add ₹{Number(MIN_ORDER_VALUE - totalPrice).toLocaleString('en-IN')} more to place your order.
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div className="w-full bg-amber-200/80 dark:bg-amber-900/50 rounded-full h-2 overflow-hidden">
+                                        <div 
+                                            className="bg-amber-500 h-2 rounded-full transition-all duration-300" 
+                                            style={{ width: `${Math.min(100, (totalPrice / MIN_ORDER_VALUE) * 100)}%` }}
+                                        />
+                                    </div>
+                                    <p className="text-[10px] text-amber-700 dark:text-amber-400 font-medium">
+                                        🚚 Delivery: ₹500 - ₹1,000 (Pay after delivery • Exact price sent via Gmail)
                                     </p>
-                                    <p className="text-green-600 dark:text-green-400 text-xs mt-0.5 font-medium">
-                                        Arriving at your doorstep by {getCartDeliveryDate()}
-                                    </p>
                                 </div>
-                            </div>
+                            ) : (
+                                <div className="bg-emerald-50 dark:bg-emerald-950/30 p-4 rounded-2xl border border-emerald-200 dark:border-emerald-900/40 flex items-center gap-3">
+                                    <div className='bg-emerald-600 p-2 rounded-lg text-white shrink-0'>
+                                        <FaCheckCircle />
+                                    </div>
+                                    <div>
+                                        <p className="font-extrabold text-emerald-900 dark:text-emerald-200 text-xs uppercase tracking-wider">
+                                            Minimum Order Reached (₹4,500+)
+                                        </p>
+                                        <p className="text-emerald-700 dark:text-emerald-400 text-xs mt-0.5 font-medium">
+                                            Delivery: ₹500 - ₹1,000 (Pay after delivery • Exact price sent via Gmail)
+                                        </p>
+                                    </div>
+                                </div>
+                            )}
 
                             <div className="bg-white dark:bg-neutral-900 p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-neutral-800 space-y-4 transition-colors">
                                 <div className='flex items-center justify-between'>
@@ -342,13 +381,12 @@ const DisplayCartItem = ({ close }) => {
                                         </div>
                                     </div>
 
-                                    <div className="flex justify-between text-xs font-bold">
-                                        <p className='text-gray-900 dark:text-gray-100 uppercase tracking-wider'>Delivery</p>
-                                        {deliveryCharge === 0 ? (
-                                            <p className="text-green-400">FREE</p>
-                                        ) : (
-                                            <p className='text-gray-900 dark:text-gray-100'>{DisplayPriceInRupees(deliveryCharge)}</p>
-                                        )}
+                                    <div className="flex justify-between items-start text-xs font-bold">
+                                        <div>
+                                            <p className='text-gray-900 dark:text-gray-100 uppercase tracking-wider'>Delivery Charge</p>
+                                            <p className='text-[10px] text-amber-600 dark:text-amber-400 font-medium normal-case'>Pay after delivery • Exact price sent via Gmail</p>
+                                        </div>
+                                        <p className='text-amber-600 dark:text-amber-400 font-bold'>₹500 - ₹1,000</p>
                                     </div>
 
                                     {handlingCharge > 0 && (
@@ -387,16 +425,22 @@ const DisplayCartItem = ({ close }) => {
                     <div className="p-4 pb-24 lg:pb-4 border-t dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-[0_-10px_20px_rgba(0,0,0,0.05)] sticky bottom-0 z-40 transition-colors duration-300">
                         <button 
                             onClick={redirectToCheckoutPage} 
-                            className="w-full bg-gradient-to-r from-indigo-600 via-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white px-6 py-4 rounded-2xl flex justify-between items-center transition-all active:scale-[0.98] shadow-lg shadow-indigo-600/25"
+                            className={`w-full text-white px-6 py-4 rounded-2xl flex justify-between items-center transition-all active:scale-[0.98] shadow-lg ${
+                                totalPrice < MIN_ORDER_VALUE 
+                                    ? 'bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 shadow-amber-600/25'
+                                    : 'bg-gradient-to-r from-indigo-600 via-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 shadow-indigo-600/25'
+                            }`}
                         >
                             <div className='flex flex-col items-start'>
-                                <span className='text-[10px] font-bold text-indigo-200 uppercase tracking-widest'>Grand Total</span>
+                                <span className='text-[10px] font-bold uppercase tracking-widest text-white/80'>
+                                    {totalPrice < MIN_ORDER_VALUE ? 'Min Order ₹4,500' : 'Grand Total'}
+                                </span>
                                 <span className="font-black text-xl leading-none">
                                     {DisplayPriceInRupees(grandTotal)}
                                 </span>
                             </div>
                             <div className='flex items-center gap-2 bg-white/20 px-4 py-2 rounded-xl font-bold'>
-                                <span>Proceed</span>
+                                <span>{totalPrice < MIN_ORDER_VALUE ? 'Add More' : 'Proceed'}</span>
                                 <FaCaretRight />
                             </div>
                         </button>

@@ -4,35 +4,7 @@ import Axios from '../utils/Axios'
 import SummaryApi from '../common/SummaryApi'
 import { FaChevronLeft, FaMotorcycle, FaMapMarkerAlt, FaPhoneAlt } from 'react-icons/fa'
 import { getImageUrl } from '../utils/getImageUrl'
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet'
 import Skeleton from '../components/Skeleton'
-
-import 'leaflet/dist/leaflet.css'
-import L from 'leaflet'
-
-delete L.Icon.Default.prototype._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
-  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-});
-
-const deliveryIcon = new L.Icon({
-    iconUrl: 'https://cdn-icons-png.flaticon.com/512/2972/2972185.png',
-    iconSize: [40, 40],
-    iconAnchor: [20, 40],
-    popupAnchor: [0, -40],
-});
-
-const RecenterMap = ({ coords }) => {
-    const map = useMap();
-    useEffect(() => {
-        if (coords) {
-            map.setView(coords, map.getZoom());
-        }
-    }, [coords]);
-    return null;
-}
 
 const statusSteps = [
     "Pending",
@@ -196,44 +168,6 @@ const OrderDetails = () => {
                                     <FaPhoneAlt size={18} />
                                 </a>
                             </div>
-
-                            <div className='h-[300px] md:h-[400px] rounded-[2.5rem] overflow-hidden border-8 border-gray-50 shadow-inner relative z-10'>
-                                <MapContainer 
-                                    center={[mainOrder.deliveryBoyId?.currentLatitude || 20.5937, mainOrder.deliveryBoyId?.currentLongitude || 78.9629]} 
-                                    zoom={15} 
-                                    className='h-full w-full'
-                                >
-                                    <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                                    
-                                    {mainOrder.deliveryBoyId?.currentLatitude && (
-                                        <Marker 
-                                            position={[mainOrder.deliveryBoyId.currentLatitude, mainOrder.deliveryBoyId.currentLongitude]} 
-                                            icon={deliveryIcon}
-                                        >
-                                            <Popup className='font-black text-xs uppercase'>Your Partner is here!</Popup>
-                                        </Marker>
-                                    )}
-
-                                    {(mainOrder.delivery_address?.latitude || mainOrder.address?.latitude) && (
-                                        <Marker position={[
-                                            mainOrder.delivery_address?.latitude || mainOrder.address?.latitude, 
-                                            mainOrder.delivery_address?.longitude || mainOrder.address?.longitude
-                                        ]}>
-                                            <Popup className='font-black text-xs uppercase'>Your Home</Popup>
-                                        </Marker>
-                                    )}
-
-                                    <RecenterMap coords={
-                                        mainOrder.deliveryBoyId?.currentLatitude 
-                                        ? [mainOrder.deliveryBoyId.currentLatitude, mainOrder.deliveryBoyId.currentLongitude]
-                                        : null
-                                    } />
-                                </MapContainer>
-                            </div>
-                            <p className='text-center mt-4 text-[9px] font-black text-blue-600 uppercase tracking-[0.2em] flex items-center justify-center gap-2'>
-                                <span className='w-1.5 h-1.5 bg-blue-500 rounded-full animate-ping'></span>
-                                Live Tracking Active
-                            </p>
                         </div>
                     )}
 
@@ -291,9 +225,12 @@ const OrderDetails = () => {
                                         <span>Subtotal</span>
                                         <span>₹{mainOrder.subTotalAmt}</span>
                                     </div>
-                                    <div className='flex justify-between items-center text-[10px] font-bold uppercase tracking-widest opacity-60'>
-                                        <span>Delivery Fee</span>
-                                        <span className='text-green-400'>FREE</span>
+                                    <div className='flex justify-between items-start text-[10px] font-bold uppercase tracking-widest opacity-80'>
+                                        <div>
+                                            <span>Delivery Fee</span>
+                                            <p className='text-[8px] text-amber-300 font-medium normal-case tracking-normal'>Exact price sent via Gmail</p>
+                                        </div>
+                                        <span className='text-amber-400'>₹500 - ₹1,000 (Pay after delivery)</span>
                                     </div>
                                     <div className='pt-4 border-t border-white/10 flex justify-between items-center'>
                                         <div>

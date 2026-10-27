@@ -48,6 +48,11 @@ const cartSlice = createSlice({
             state.cart.push(action.payload);
             saveCachedCart(state.cart);
         },
+        removeCartItemOptimistic : (state,action)=>{
+            const id = action.payload;
+            state.cart = state.cart.filter(item => item._id !== id);
+            saveCachedCart(state.cart);
+        },
         clearCartItem : (state)=>{
             state.cart = [];
             try {
@@ -57,6 +62,6 @@ const cartSlice = createSlice({
     }
 })
 
-export const { handleAddItemCart, clearCartItem, updateCartItemQtyOptimistic, addCartItemOptimistic } = cartSlice.actions
+export const { handleAddItemCart, clearCartItem, updateCartItemQtyOptimistic, addCartItemOptimistic, removeCartItemOptimistic } = cartSlice.actions
 
 export default cartSlice.reducer

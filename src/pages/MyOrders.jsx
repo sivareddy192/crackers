@@ -319,12 +319,13 @@ const MyOrders = () => {
                       <span className="font-medium text-black">₹{order.items.reduce((a, b) => a + (b.price * b.quantity), 0)}</span>
                     </div>
 
-                    {order.deliveryCharge > 0 && (
-                      <div className="flex justify-between">
-                        <span>Delivery Charge</span>
-                        <span className="text-black">₹{order.deliveryCharge}</span>
+                    <div className="flex justify-between items-start text-xs text-amber-800 bg-amber-50/80 p-2 rounded-lg border border-amber-200/50">
+                      <div>
+                        <span className="font-semibold">Delivery Charge</span>
+                        <p className="text-[10px] text-amber-700 font-normal">Pay after delivery • Exact price sent via Gmail</p>
                       </div>
-                    )}
+                      <span className="font-bold">₹500 - ₹1,000</span>
+                    </div>
 
                     {order.handlingCharge > 0 && (
                       <div className="flex justify-between">

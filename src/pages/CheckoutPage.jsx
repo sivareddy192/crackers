@@ -19,7 +19,9 @@ import {
   Smartphone,
   Pencil,
   Plus,
-  ArrowRight
+  ArrowRight,
+  AlertCircle,
+  CheckCircle2
 } from 'lucide-react'
 
 const CheckoutPage = () => {
@@ -112,6 +114,10 @@ const CheckoutPage = () => {
   const handleCashOnDelivery = async () => {
     if (processing) return
     try {
+      if (totalPrice < MIN_ORDER_VALUE) {
+        toast.error(`Minimum order amount is ₹${MIN_ORDER_VALUE.toLocaleString('en-IN')}. Please add ₹${Number(MIN_ORDER_VALUE - totalPrice).toLocaleString('en-IN')} more to proceed.`)
+        return
+      }
       if (selectAddress === null || !addressList[selectAddress]) {
         toast.error("Please select a delivery address")
         return
@@ -158,6 +164,10 @@ const CheckoutPage = () => {
   const handleOnlinePayment = async () => {
     if (processing) return
     try {
+      if (totalPrice < MIN_ORDER_VALUE) {
+        toast.error(`Minimum order amount is ₹${MIN_ORDER_VALUE.toLocaleString('en-IN')}. Please add ₹${Number(MIN_ORDER_VALUE - totalPrice).toLocaleString('en-IN')} more to proceed.`)
+        return
+      }
       if (selectAddress === null || !addressList[selectAddress]) {
         toast.error("Please select a delivery address")
         return
@@ -197,8 +207,10 @@ const CheckoutPage = () => {
     }
   }
 
-  const FREE_DELIVERY_THRESHOLD = 3500
-  const deliveryProgress = Math.min(100, Math.round((totalPrice / FREE_DELIVERY_THRESHOLD) * 100))
+  const MIN_ORDER_VALUE = 4500
+  const amountToMinOrder = Math.max(0, MIN_ORDER_VALUE - totalPrice)
+  const isBelowMinOrder = totalPrice < MIN_ORDER_VALUE
+  const deliveryProgress = Math.min(100, Math.round((totalPrice / MIN_ORDER_VALUE) * 100))
 
   return (
     <div className='bg-[#f4f7fb] min-h-screen pb-16 pt-3'>
@@ -356,33 +368,55 @@ const CheckoutPage = () => {
               </div>
             </div>
 
-            <div className='bg-emerald-50/70 border border-emerald-100 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4'>
-              <div className='flex items-center gap-3.5'>
-                <div className='w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0'>
+            <div className={`border rounded-2xl p-4 sm:p-5 flex flex-col gap-3 transition-all ${
+              isBelowMinOrder ? 'bg-amber-50/80 border-amber-200' : 'bg-emerald-50/70 border-emerald-200'
+            }`}>
+              <div className='flex items-start gap-3.5'>
+                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 ${
+                  isBelowMinOrder ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'
+                }`}>
                   <Truck size={24} />
                 </div>
-                <div>
-                  <h3 className='font-bold text-emerald-800 text-sm sm:text-base'>
-                    Congrats! You get FREE delivery
-                  </h3>
-                  <p className='text-xs text-gray-600 font-medium mt-0.5'>
-                    {totalPrice >= FREE_DELIVERY_THRESHOLD || deliveryCharge === 0
-                      ? 'Free delivery applied on this order.'
-                      : `Add items worth ${DisplayPriceInRupees(FREE_DELIVERY_THRESHOLD - totalPrice)} more to get free delivery.`
-                    }
-                  </p>
-                  
-                  <div className='w-full sm:w-72 md:w-80 h-2 bg-emerald-200/60 rounded-full overflow-hidden mt-2.5'>
-                    <div 
-                      className='h-full bg-emerald-500 rounded-full transition-all duration-500'
-                      style={{ width: `${deliveryProgress}%` }}
-                    />
+                <div className='flex-1'>
+                  <div className='flex flex-wrap items-center justify-between gap-2'>
+                    <h3 className={`font-bold text-sm sm:text-base ${
+                      isBelowMinOrder ? 'text-amber-900' : 'text-emerald-900'
+                    }`}>
+                      Delivery Charges: ₹500 - ₹1,000 (Pay After Delivery)
+                    </h3>
+                    <span className={`text-[11px] font-extrabold px-2.5 py-0.5 rounded-full ${
+                      isBelowMinOrder ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'
+                    }`}>
+                      Min Order: ₹4,500
+                    </span>
                   </div>
-                </div>
-              </div>
+                  <p className='text-xs text-gray-700 font-medium mt-1 leading-relaxed'>
+                    Delivery charges are to be paid upon receiving your order. We will send the exact delivery price to your registered Gmail based on your address and parcel weight.
+                  </p>
 
-              <div className='text-right shrink-0 sm:self-center font-bold text-xs sm:text-sm text-gray-800 pl-2'>
-                {DisplayPriceInRupees(totalPrice)} / {DisplayPriceInRupees(FREE_DELIVERY_THRESHOLD)}
+                  {isBelowMinOrder ? (
+                    <div className='mt-3 bg-white/90 border border-amber-200 p-3 rounded-xl'>
+                      <div className='flex items-center justify-between text-xs font-bold text-amber-900 mb-1.5'>
+                        <span className='flex items-center gap-1.5 text-rose-600'>
+                          <AlertCircle size={14} />
+                          Add {DisplayPriceInRupees(amountToMinOrder)} more to place order
+                        </span>
+                        <span>{DisplayPriceInRupees(totalPrice)} / {DisplayPriceInRupees(MIN_ORDER_VALUE)}</span>
+                      </div>
+                      <div className='w-full h-2 bg-amber-100 rounded-full overflow-hidden'>
+                        <div 
+                          className='h-full bg-amber-500 rounded-full transition-all duration-500'
+                          style={{ width: `${deliveryProgress}%` }}
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <div className='mt-2.5 text-xs text-emerald-700 font-bold flex items-center gap-1.5'>
+                      <CheckCircle2 size={16} />
+                      <span>Minimum order requirement of ₹4,500 met! ({DisplayPriceInRupees(totalPrice)})</span>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -402,8 +436,8 @@ const CheckoutPage = () => {
                   <Truck size={20} />
                 </div>
                 <div>
-                  <p className='font-bold text-xs sm:text-sm text-gray-900'>Free Delivery</p>
-                  <p className='text-[11px] text-gray-400 font-medium'>On orders above ₹3,500</p>
+                  <p className='font-bold text-xs sm:text-sm text-gray-900'>Delivery: ₹500 - ₹1,000</p>
+                  <p className='text-[11px] text-gray-400 font-medium'>Pay after delivery • Exact price via Gmail</p>
                 </div>
               </div>
 
@@ -505,35 +539,42 @@ const CheckoutPage = () => {
                 </div>
               )}
 
-              <div className='flex justify-between items-center text-xs sm:text-sm font-medium'>
-                <span className='text-gray-700'>Delivery Charge</span>
-                <span>
-                  {deliveryCharge === 0 ? (
-                    <span className='text-emerald-500 font-bold'>FREE</span>
-                  ) : (
-                    <span className='text-gray-900 font-bold'>{DisplayPriceInRupees(deliveryCharge)}</span>
-                  )}
-                </span>
+              <div className='flex justify-between items-start text-xs sm:text-sm font-medium'>
+                <div>
+                  <span className='text-gray-700'>Delivery Charge</span>
+                  <p className='text-[10px] text-amber-600 font-medium'>Pay after delivery • Exact price sent to Gmail</p>
+                </div>
+                <span className='text-amber-600 font-bold'>₹500 - ₹1,000</span>
               </div>
 
-              <div className='flex justify-between items-center text-xs sm:text-sm font-medium'>
-                <span className='text-gray-700'>Handling Charge</span>
-                <span className='text-gray-900 font-bold'>
-                  ₹{Number(handlingCharge || 0).toFixed(2)}
-                </span>
-              </div>
+              {handlingCharge > 0 && (
+                <div className='flex justify-between items-center text-xs sm:text-sm font-medium'>
+                  <span className='text-gray-700'>Handling Charge</span>
+                  <span className='text-gray-900 font-bold'>
+                    ₹{Number(handlingCharge || 0).toFixed(2)}
+                  </span>
+                </div>
+              )}
 
               <div className='border-t border-gray-100 pt-4'>
-                <p className='text-xs font-semibold text-gray-500'>Grand Total</p>
+                <p className='text-xs font-semibold text-gray-500'>Grand Total (To Pay Now)</p>
                 <p className='text-3xl font-extrabold text-gray-900 tracking-tight mt-1'>
                   ₹{grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </p>
+                <p className='text-[11px] text-amber-800 bg-amber-50 border border-amber-200/70 p-2.5 rounded-xl mt-3 font-medium leading-relaxed'>
+                  ℹ️ Delivery charges (₹500 - ₹1,000) are to be paid after delivery. Exact price will be calculated and emailed to your Gmail.
                 </p>
               </div>
 
             </div>
 
             <div className='space-y-3 pt-6'>
-              {selectAddress === null && (
+              {isBelowMinOrder ? (
+                <div className='bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold p-3 rounded-xl text-center flex items-center justify-center gap-1.5'>
+                  <AlertCircle size={15} />
+                  <span>Minimum order of ₹4,500 required (Add {DisplayPriceInRupees(amountToMinOrder)} more)</span>
+                </div>
+              ) : selectAddress === null && (
                 <p className='text-rose-500 text-xs font-semibold text-center'>
                   {addressList.length === 0 ? "Please add an address first" : "Please select an address to proceed"}
                 </p>
@@ -542,30 +583,30 @@ const CheckoutPage = () => {
               <button
                 type='button'
                 onClick={handleOnlinePayment}
-                disabled={selectAddress === null || processing || cartItemsList.length === 0}
+                disabled={selectAddress === null || processing || cartItemsList.length === 0 || isBelowMinOrder}
                 className={`w-full py-3.5 px-4 rounded-xl text-white font-bold text-sm transition-all flex items-center justify-center gap-2 shadow-md cursor-pointer ${
-                  selectAddress === null || processing || cartItemsList.length === 0
+                  selectAddress === null || processing || cartItemsList.length === 0 || isBelowMinOrder
                     ? 'bg-blue-300 cursor-not-allowed shadow-none'
                     : 'bg-blue-600 hover:bg-blue-700 active:scale-[0.99] shadow-blue-500/20'
                 }`}
               >
                 <CreditCard size={18} />
-                <span>{processing ? 'Processing...' : 'Pay Online (Stripe)'}</span>
+                <span>{processing ? 'Processing...' : isBelowMinOrder ? 'Min Order ₹4,500 Required' : 'Pay Online (Stripe)'}</span>
                 <ArrowRight size={16} />
               </button>
 
               <button
                 type='button'
                 onClick={handleCashOnDelivery}
-                disabled={selectAddress === null || processing || cartItemsList.length === 0}
+                disabled={selectAddress === null || processing || cartItemsList.length === 0 || isBelowMinOrder}
                 className={`w-full py-3.5 px-4 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 border cursor-pointer ${
-                  selectAddress === null || processing || cartItemsList.length === 0
+                  selectAddress === null || processing || cartItemsList.length === 0 || isBelowMinOrder
                     ? 'border-gray-200 text-gray-400 bg-gray-50 cursor-not-allowed'
                     : 'border-gray-200 text-gray-800 bg-white hover:bg-gray-50 active:scale-[0.99] shadow-2xs'
                 }`}
               >
                 <Banknote size={18} />
-                <span>{processing ? 'Processing...' : 'Cash on Delivery'}</span>
+                <span>{processing ? 'Processing...' : isBelowMinOrder ? 'Min Order ₹4,500 Required' : 'Cash on Delivery'}</span>
               </button>
             </div>
 

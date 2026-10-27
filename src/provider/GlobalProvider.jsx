@@ -7,6 +7,7 @@ import {
   handleAddItemCart,
   updateCartItemQtyOptimistic,
   addCartItemOptimistic,
+  removeCartItemOptimistic,
 } from "../store/cartProduct";
 import AxiosToastError from "../utils/AxiosToastError";
 import toast from "react-hot-toast";
@@ -122,6 +123,7 @@ const GlobalProvider = ({ children }) => {
   };
 
   const deleteCartItem = async (cartId) => {
+    dispatch(removeCartItemOptimistic(cartId));
     try {
       const response = await Axios({
         ...SummaryApi.deleteCartItem,
@@ -135,8 +137,11 @@ const GlobalProvider = ({ children }) => {
       if (responseData.success) {
         toast.success(responseData.message);
         fetchCartItem();
+      } else {
+        fetchCartItem();
       }
     } catch (error) {
+      fetchCartItem();
       AxiosToastError(error);
     }
   };
@@ -174,13 +179,9 @@ const GlobalProvider = ({ children }) => {
     }, 0);
     setNotDiscountTotalPrice(originalPrice);
 
-    if (qty > 0) {
-      setDeliveryCharge(subtotal < 199 ? 30 : 0);
-      setHandlingCharge(subtotal > 199 ? 9 : 0);
-    } else {
-      setDeliveryCharge(0);
-      setHandlingCharge(0);
-    }
+    // Delivery charges are ₹500 - ₹1000 payable after delivery (exact price sent via Gmail)
+    setDeliveryCharge(0);
+    setHandlingCharge(0);
 
     if (appliedCoupon && subtotal < (appliedCoupon.minAmount || 0)) {
         setAppliedCoupon(null);
@@ -271,6 +272,7 @@ const GlobalProvider = ({ children }) => {
         totalPrice,
         totalQty,
         notDiscountTotalPrice,
+        minOrderAmount: 4500,
         fetchOrder,
         fetchUser,
         fetchAddress,

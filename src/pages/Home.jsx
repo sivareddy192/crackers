@@ -129,7 +129,7 @@ const Home = () => {
           className="bg-gradient-to-r from-amber-500 via-orange-500 to-rose-600 text-white py-2.5 px-4 text-center text-[11px] md:text-xs font-black tracking-wider uppercase flex items-center justify-center gap-2 cursor-pointer transition-all hover:brightness-105 select-none relative shadow-xs"
         >
           <IoSparklesSharp className="animate-bounce text-amber-200" aria-hidden="true" />
-          <span>🔥 SPECIAL OFFER: GET {welcomeCoupon.discountPercent}% OFF YOUR FIRST ORDER! USE CODE: <strong className="underline font-extrabold ml-1 bg-white/20 px-2 py-0.5 rounded-md">{welcomeCoupon.code}</strong> 🎁 (TAP TO COPY)</span>
+          <span>SPECIAL OFFER: GET {welcomeCoupon.discountPercent}% OFF YOUR FIRST ORDER! USE CODE: <strong className="underline font-extrabold ml-1 bg-white/20 px-2 py-0.5 rounded-md">{welcomeCoupon.code}</strong> 🎁 (TAP TO COPY)</span>
         </div>
       )}
       
@@ -141,7 +141,7 @@ const Home = () => {
         {[
           { icon: <FaCrown className="shrink-0 text-xl text-orange-600 lg:text-2xl" aria-hidden="true" />, title: "Crackers & Fireworks", detail: "Browse celebration products" },
           { icon: <FaLock className="shrink-0 text-xl text-orange-600 lg:text-2xl" aria-hidden="true" />, title: "Safe Celebrations", detail: "Read our fireworks safety tips" },
-          { icon: <FaTruckFast className="shrink-0 text-xl text-orange-600 lg:text-2xl" aria-hidden="true" />, title: "Order Online", detail: "Delivery options at checkout" },
+          { icon: <FaTruckFast className="shrink-0 text-xl text-orange-600 lg:text-2xl" aria-hidden="true" />, title: "Delivery: ₹500 - ₹1,000", detail: "Pay after delivery • Price via Gmail" },
           { icon: <FaHeadset className="shrink-0 text-xl text-orange-600 lg:text-2xl" aria-hidden="true" />, title: "Customer Support", detail: "Help with orders and products" }
         ].map(benefit => (
           <div key={benefit.title} className="flex flex-col items-center justify-center gap-1 px-0.5 py-1 text-center lg:flex-row lg:gap-3 lg:px-2 lg:py-2 lg:text-left lg:border-r lg:border-slate-200 last:border-r-0">

@@ -44,30 +44,30 @@ const BannerDisplay = ({ banners = [] }) => {
         }
     }, [displayBanners.length])
 
-    if (displayBanners.length === 0) {
-        return (
-            <div className='home-banner relative w-full px-3 pt-1 lg:px-0 lg:pt-0'>
-                <div className='relative overflow-hidden rounded-2xl lg:rounded-none aspect-[2.4/1] lg:aspect-[3.1/1] w-full min-h-[175px] sm:min-h-[220px] lg:min-h-[340px] flex items-center bg-gradient-to-r from-orange-50 via-white to-amber-100 px-5 lg:px-[8.5%] border border-orange-100/60'>
-                    <div className='relative z-10 max-w-xl'>
-                        <p className='mb-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-orange-700 sm:text-xs'>
-                            Crackers &amp; fireworks for celebrations
-                        </p>
-                        <h2 className='font-heading text-2xl font-black leading-[1.08] tracking-tight text-slate-950 sm:text-4xl lg:text-5xl'>
-                            Celebrate together.<br /><span className='text-orange-600'>Celebrate safely.</span>
-                        </h2>
-                        <p className='mt-2 max-w-sm text-xs font-medium text-slate-600 sm:text-sm line-clamp-2'>
-                            Explore crackers and fireworks for special occasions. Choose responsibly and follow every product safety instruction.
-                        </p>
-                        <Link to='/products' className='mt-3.5 inline-flex items-center gap-2 rounded-full bg-orange-600 px-5 py-2.5 text-xs font-extrabold text-white shadow-md shadow-orange-600/20 transition hover:bg-orange-700 active:scale-95'>
-                            Browse products <span aria-hidden='true'>→</span>
-                        </Link>
-                    </div>
-                    <div className='pointer-events-none absolute -right-10 -top-20 h-72 w-72 rounded-full bg-orange-200/40 blur-3xl lg:right-[10%]' />
-                    <div className='pointer-events-none absolute -bottom-28 right-[18%] h-72 w-72 rounded-full bg-amber-200/40 blur-3xl' />
-                </div>
-            </div>
-        )
-    }
+    // if (displayBanners.length === 0) {
+    //     return (
+    //         // <div className='home-banner relative w-full px-3 pt-1 lg:px-0 lg:pt-0'>
+    //         //     <div className='relative overflow-hidden rounded-2xl lg:rounded-none aspect-[2.4/1] lg:aspect-[3.1/1] w-full min-h-[175px] sm:min-h-[220px] lg:min-h-[340px] flex items-center bg-gradient-to-r from-orange-50 via-white to-amber-100 px-5 lg:px-[8.5%] border border-orange-100/60'>
+    //         //         <div className='relative z-10 max-w-xl'>
+    //         //             <p className='mb-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-orange-700 sm:text-xs'>
+    //         //                 Crackers &amp; fireworks for celebrations
+    //         //             </p>
+    //         //             <h2 className='font-heading text-2xl font-black leading-[1.08] tracking-tight text-slate-950 sm:text-4xl lg:text-5xl'>
+    //         //                 Celebrate together.<br /><span className='text-orange-600'>Celebrate safely.</span>
+    //         //             </h2>
+    //         //             <p className='mt-2 max-w-sm text-xs font-medium text-slate-600 sm:text-sm line-clamp-2'>
+    //         //                 Explore crackers and fireworks for special occasions. Choose responsibly and follow every product safety instruction.
+    //         //             </p>
+    //         //             <Link to='/products' className='mt-3.5 inline-flex items-center gap-2 rounded-full bg-orange-600 px-5 py-2.5 text-xs font-extrabold text-white shadow-md shadow-orange-600/20 transition hover:bg-orange-700 active:scale-95'>
+    //         //                 Browse products <span aria-hidden='true'>→</span>
+    //         //             </Link>
+    //         //         </div>
+    //         //         <div className='pointer-events-none absolute -right-10 -top-20 h-72 w-72 rounded-full bg-orange-200/40 blur-3xl lg:right-[10%]' />
+    //         //         <div className='pointer-events-none absolute -bottom-28 right-[18%] h-72 w-72 rounded-full bg-amber-200/40 blur-3xl' />
+    //         //     </div>
+    //         // </div>
+    //     )
+    // }
 
     return (
         <div className='home-banner relative w-full px-3 pt-1 lg:px-0 lg:pt-0'>

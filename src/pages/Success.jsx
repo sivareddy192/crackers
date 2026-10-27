@@ -66,6 +66,15 @@ const Success = () => {
                             </p>
                         </div>
 
+                        <div className='w-full bg-amber-50 border border-amber-200 rounded-2xl p-4 text-left space-y-1.5'>
+                            <p className='font-bold text-amber-900 text-xs flex items-center gap-1.5'>
+                                🚚 Delivery Charges Notice
+                            </p>
+                            <p className='text-xs text-amber-800 leading-relaxed'>
+                                Delivery charges: <strong>₹500 - ₹1,000 (Pay after delivery)</strong>. The exact delivery price will be calculated and sent to your <strong>Gmail</strong> shortly.
+                            </p>
+                        </div>
+
                         <div className='w-full pt-4 space-y-3'>
                             <Link 
                                 to="/dashboard/myorders" 

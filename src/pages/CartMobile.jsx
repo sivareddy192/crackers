@@ -25,7 +25,7 @@ import { valideURLConvert } from "../utils/valideURLConvert"
 import imageEmpty from "../assets/empty_cart.avif"
 import toast from "react-hot-toast"
 
-const FREE_DELIVERY_THRESHOLD = 199
+const MIN_ORDER_VALUE = 4500
 
 const CartMobile = () => {
   const navigate = useNavigate()
@@ -59,8 +59,8 @@ const CartMobile = () => {
   )
   const selectedCount = validItems.filter(item => selectedIds.includes(item._id)).length
   const allSelected = validItems.length > 0 && selectedCount === validItems.length
-  const amountToFreeDelivery = Math.max(0, FREE_DELIVERY_THRESHOLD - totalPrice)
-  const deliveryProgress = Math.min(100, (totalPrice / FREE_DELIVERY_THRESHOLD) * 100)
+  const amountToMinOrder = Math.max(0, MIN_ORDER_VALUE - totalPrice)
+  const orderProgress = Math.min(100, (totalPrice / MIN_ORDER_VALUE) * 100)
   const grandTotal = totalPrice + deliveryCharge + handlingCharge - couponDiscount
 
   useEffect(() => {
@@ -201,6 +201,10 @@ const CartMobile = () => {
       navigate("/login")
       return
     }
+    if (totalPrice < MIN_ORDER_VALUE) {
+      toast.error(`Minimum order value is ₹${MIN_ORDER_VALUE.toLocaleString('en-IN')}. Please add ₹${amountToMinOrder.toLocaleString('en-IN')} more to proceed.`)
+      return
+    }
     navigate("/checkout")
   }
 
@@ -223,29 +227,34 @@ const CartMobile = () => {
             <p className="mt-1 text-sm text-slate-500">Review your items and proceed to checkout.</p>
           </div>
           {showDeliveryBanner && validItems.length > 0 && (
-            <div className="relative rounded-xl border border-emerald-200 bg-emerald-50/70 p-3.5 pr-10">
+            <div className="relative rounded-xl border border-amber-200 bg-amber-50/80 p-3.5 pr-10">
               <button
                 type="button"
                 onClick={() => setShowDeliveryBanner(false)}
-                aria-label="Dismiss delivery message"
+                aria-label="Dismiss message"
                 className="absolute right-3 top-3 text-slate-400 hover:text-slate-700"
               >
                 <IoClose size={18} />
               </button>
               <div className="flex items-center gap-3">
-                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-700">
                   <FaTruckFast className="text-xl" />
                 </span>
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-extrabold text-emerald-800">
-                    {amountToFreeDelivery ? `Add ${DisplayPriceInRupees(amountToFreeDelivery)} for free delivery` : "You qualify for free delivery"}
+                  <p className="text-sm font-extrabold text-amber-900">
+                    {totalPrice < MIN_ORDER_VALUE 
+                      ? `Minimum Order: ₹4,500 (Add ${DisplayPriceInRupees(amountToMinOrder)} more)` 
+                      : "Minimum Order Requirement Met (₹4,500+)"}
                   </p>
-                  <div className="mt-1.5 flex items-center gap-3">
-                    <div className="h-2 flex-1 overflow-hidden rounded-full bg-emerald-100">
-                      <div className="h-full rounded-full bg-orange-500 transition-all" style={{ width: `${deliveryProgress}%` }} />
+                  <p className="text-xs text-amber-800 font-medium mt-0.5">
+                    🚚 Delivery Charges: ₹500 - ₹1,000 (Pay after delivery • Exact price sent via Gmail)
+                  </p>
+                  <div className="mt-2 flex items-center gap-3">
+                    <div className="h-2 flex-1 overflow-hidden rounded-full bg-amber-200/70">
+                      <div className={`h-full rounded-full transition-all ${totalPrice >= MIN_ORDER_VALUE ? 'bg-emerald-500' : 'bg-amber-500'}`} style={{ width: `${orderProgress}%` }} />
                     </div>
                     <span className="shrink-0 text-[10px] font-bold text-slate-600">
-                      {DisplayPriceInRupees(totalPrice)} / {DisplayPriceInRupees(FREE_DELIVERY_THRESHOLD)}
+                      {DisplayPriceInRupees(totalPrice)} / {DisplayPriceInRupees(MIN_ORDER_VALUE)}
                     </span>
                   </div>
                 </div>
@@ -383,11 +392,12 @@ const CartMobile = () => {
                       <span className="font-bold text-emerald-600">- {DisplayPriceInRupees(notDiscountTotalPrice - totalPrice)}</span>
                     </div>
                   )}
-                  <div className="flex justify-between gap-3 text-slate-600">
-                    <span>Delivery Charge</span>
-                    <span className={`font-bold ${deliveryCharge === 0 ? "text-emerald-600" : "text-slate-800"}`}>
-                      {deliveryCharge === 0 ? "FREE" : DisplayPriceInRupees(deliveryCharge)}
-                    </span>
+                  <div className="flex justify-between items-start gap-3 text-slate-600">
+                    <div>
+                      <span className="font-semibold text-slate-700">Delivery Charge</span>
+                      <p className="text-[10px] text-amber-600 font-medium">Pay after delivery • Exact price sent via Gmail</p>
+                    </div>
+                    <span className="font-bold text-amber-600">₹500 - ₹1,000</span>
                   </div>
                   {handlingCharge > 0 && (
                     <div className="flex justify-between gap-3 text-slate-600">
@@ -476,14 +486,14 @@ const CartMobile = () => {
                 {[
                   ["Secure Payment", "Safe & secure"],
                   ["Fireworks Safety", "Read our handling guide"],
-                  ["Free Delivery", `On orders above ${DisplayPriceInRupees(FREE_DELIVERY_THRESHOLD)}`],
+                  ["Delivery: ₹500 - ₹1,000", "Pay after delivery • Exact price via Gmail"],
                   ["Customer Support", "Help with your order"]
                 ].map(([title, subtitle]) => (
                   <div key={title} className="flex min-h-16 items-center gap-2 bg-white p-2.5">
                     <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-orange-50 text-orange-600">
                       {title === "Secure Payment" ? <FaShieldHalved /> : null}
                       {title === "Fireworks Safety" ? <FaShieldHalved /> : null}
-                      {title === "Free Delivery" ? <FaTruckFast /> : null}
+                      {title.startsWith("Delivery") ? <FaTruckFast /> : null}
                       {title === "Customer Support" ? <FaCheck /> : null}
                     </span>
                     <div className="min-w-0">

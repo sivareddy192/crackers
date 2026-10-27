@@ -214,6 +214,10 @@ const SummaryApi = {
         getOrderItems: {
             url: "/api/order/order-items",
             method: "get"
+        },
+        updateOrder: {
+            url: "/api/admin/orders/:id",
+            method: "put"
         }
     },
 
@@ -233,19 +237,30 @@ const SummaryApi = {
     },
 
     admin: {
-    getOrders: {
-        url: "/api/admin/orders",
-        method: "get",
-    },
-
-    updateOrderStatus: {
-        url: "/api/admin/orders",
-        method: "put",
-    },
-    getStats: {
-        url: "/api/admin/stats",
-        method: "get",
-    },
+        getOrders: {
+            url: "/api/admin/orders",
+            method: "get",
+        },
+        getOrderDetails: {
+            url: "/api/order/order-items",
+            method: "get",
+        },
+        updateOrderStatus: {
+            url: "/api/admin/orders",
+            method: "put",
+        },
+        deleteOrder: {
+            url: "/api/order/delete/:id",
+            method: "delete",
+        },
+        assignOrder: {
+            url: "/api/order/assign",
+            method: "post",
+        },
+        getStats: {
+            url: "/api/admin/stats",
+            method: "get",
+        },
     },
     
     coupon_list: {

@@ -9,8 +9,10 @@
     <meta name="theme-color" content="#ea580c" />
     <meta name="color-scheme" content="light" />
 
-    <link rel="icon" type="image/jpeg" href="/vite.jpg" />
-    <link rel="apple-touch-icon" href="/vite.jpg" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
+    <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png" />
+    <link rel="apple-touch-icon" sizes="192x192" href="/icon-192.png" />
+    <link rel="manifest" href="/manifest.json" />
     <link rel="canonical" href="https://tracly.in/" />
 
     <meta property="og:type" content="website" />
@@ -167,18 +169,14 @@
         min-height: 180px;
         border-radius: 16px;
         background: linear-gradient(135deg, #fff7ed 0%, #ffffff 50%, #fef3c7 100%);
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        padding: 24px;
-        box-sizing: border-box;
         overflow: hidden;
+        position: relative;
       }
       #root > .critical-shell-hero { contain: layout size; }
       @media (min-width: 1024px) {
         .critical-shell-header { height: 80px; }
         .critical-shell-hero { margin-top: 88px; padding: 0; }
-        .critical-shell-banner { aspect-ratio: 3.1 / 1; min-height: 340px; border-radius: 0; padding: 48px 8.5%; }
+        .critical-shell-banner { aspect-ratio: 3.1 / 1; min-height: 340px; border-radius: 0; }
       }
     </style>
 
@@ -244,21 +242,7 @@
       </div>
 
       <div id="home-shell" class="critical-shell-hero">
-        <div class="critical-shell-banner">
-          <p style="font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:0.18em;color:#ea580c;margin:0 0 10px 0;">
-            🎆 Crackers &amp; fireworks for celebrations
-          </p>
-          <h1 id="shell-hero-heading" style="font-size:clamp(28px,6vw,52px);font-weight:900;line-height:1.08;color:#0f172a;margin:0 0 12px 0;letter-spacing:-0.02em;">
-            Celebrate together.<br><span style="color:#ea580c;">Celebrate safely.</span>
-          </h1>
-          <p style="font-size:14px;color:#475569;margin:0 0 20px 0;max-width:440px;line-height:1.5;">
-            Shop premium crackers &amp; fireworks online with safe doorstep delivery across India.
-          </p>
-          <a href="/products"
-             style="display:inline-flex;align-items:center;gap:8px;background:#ea580c;color:#fff;padding:11px 22px;border-radius:999px;font-size:13px;font-weight:800;text-decoration:none;box-shadow:0 4px 14px rgba(234,88,12,0.3);">
-            Shop products <span aria-hidden="true">→</span>
-          </a>
-        </div>
+        <div class="critical-shell-banner"></div>
       </div>
 
       <script>
