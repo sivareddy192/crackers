@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react'
-import logoAvif from "../assets/trace-logo.avif"
+import trace from "../assets/trace-logo.png"
 import logoPng from "../assets/trace-logo.png"
 import Search from './Search'
 import { Link, useNavigate } from 'react-router-dom'
@@ -58,9 +58,9 @@ const Header = () => {
 
           <Link to={"/"} aria-label="Tracly Home" className='shrink-0 transition-transform active:scale-95 flex items-center'>
             <picture>
-              <source srcSet={logoAvif} type="image/avif" />
+              <source srcSet={trace} type="image/avif" />
               <img
-                src={logoPng}
+                src={trace}
                 width="144"
                 height="72"
                 className='w-[90px] sm:w-24 lg:w-36 h-auto transition-all duration-300 hover:brightness-105'
