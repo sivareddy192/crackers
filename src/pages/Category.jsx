@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react'
+import { useDispatch } from 'react-redux'
+import { setAllCategory } from '../store/productSlice'
 import UploadCategory from '../components/UploadCategory'
 import Loading from '../components/Loading'
 import NoData from '../components/NoData'
@@ -11,6 +13,7 @@ import AxiosToastError from '../utils/AxiosToastError'
 import { getImageUrl } from '../utils/getImageUrl'
 
 const CategoryPage = () => {
+    const dispatch = useDispatch()
     const [openUploadCategory, setOpenUploadCategory] = useState(false)
     const [loading, setLoading] = useState(false)
     const [categoryData, setCategoryData] = useState([])
@@ -24,16 +27,37 @@ const CategoryPage = () => {
         _id: ""
     })
 
-    const fetchCategory = async () => {
+    const fetchCategory = async (newOrUpdatedCategory = null) => {
+        // Optimistic injection if passed from upload/edit
+        if (newOrUpdatedCategory && newOrUpdatedCategory._id) {
+            setCategoryData(prev => {
+                const index = prev.findIndex(c => c._id === newOrUpdatedCategory._id);
+                let updated;
+                if (index !== -1) {
+                    updated = [...prev];
+                    updated[index] = newOrUpdatedCategory;
+                } else {
+                    updated = [newOrUpdatedCategory, ...prev];
+                }
+                dispatch(setAllCategory(updated));
+                return updated;
+            });
+        }
+
         try {
-            setLoading(true)
+            if (!newOrUpdatedCategory) {
+                setLoading(true);
+            }
             const response = await Axios({
-                ...SummaryApi.getCategory
+                ...SummaryApi.getCategory,
+                params: { t: Date.now() },
+                headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }
             })
             const { data: responseData } = response
 
             if (responseData.success) {
                 setCategoryData(responseData.data)
+                dispatch(setAllCategory(responseData.data))
             }
         } catch (error) {
             AxiosToastError(error)
@@ -47,21 +71,33 @@ const CategoryPage = () => {
     }, [])
 
     const handleDeleteCategory = async () => {
+        const targetId = deleteCategory?._id;
+        if (!targetId) return;
+
         try {
+            // Optimistically remove from UI and Redux immediately
+            setCategoryData(prev => prev.filter(c => c._id !== targetId));
+            dispatch(setAllCategory(categoryData.filter(c => c._id !== targetId)));
+            setOpenConfirmBoxDelete(false);
+
             const response = await Axios({
                 ...SummaryApi.deleteCategory,
-                data: deleteCategory
-            })
+                data: { _id: targetId },
+                params: { _id: targetId }
+            });
 
-            const { data: responseData } = response
+            const { data: responseData } = response;
 
             if (responseData.success) {
-                toast.success(responseData.message)
-                fetchCategory()
-                setOpenConfirmBoxDelete(false)
+                toast.success(responseData.message || "Category deleted successfully");
+                fetchCategory();
+            } else {
+                toast.error(responseData.message || "Failed to delete category");
+                fetchCategory();
             }
         } catch (error) {
-            AxiosToastError(error)
+            AxiosToastError(error);
+            fetchCategory();
         }
     }
 

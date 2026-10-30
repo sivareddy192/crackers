@@ -1,141 +1,160 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { Html5Qrcode } from 'html5-qrcode';
-import { FaTimes, FaCamera, FaSpinner, FaQrcode } from 'react-icons/fa';
+import { FaTimes, FaCamera, FaSpinner, FaQrcode, FaRedo } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 
 const QRScanner = ({ onScan, onClose }) => {
-    // 'pending' | 'granted' | 'denied' | 'checking'
-    const [permission, setPermission] = useState('checking');
+    // 'checking' | 'starting' | 'granted' | 'denied' | 'error'
+    const [status, setStatus] = useState('checking');
     const [errorMsg, setErrorMsg] = useState('');
     const scannerRef = useRef(null);
-    const containerId = "Scan The QR";
+    const containerId = 'tracly-qr-reader';
 
-    const startScanner = async () => {
+    const stopScanner = useCallback(async () => {
+        if (scannerRef.current) {
+            try {
+                if (scannerRef.current.isScanning) {
+                    await scannerRef.current.stop();
+                }
+            } catch (_) {}
+            try { scannerRef.current.clear(); } catch (_) {}
+            scannerRef.current = null;
+        }
+    }, []);
+
+    const startScanner = useCallback(async () => {
+        setStatus('checking');
+        setErrorMsg('');
+
+        await stopScanner();
+
+        // ── Step 1: Probe camera with getUserMedia to get the real permission state ──
+        if (!navigator?.mediaDevices?.getUserMedia) {
+            setStatus('error');
+            setErrorMsg(
+                window.isSecureContext === false
+                    ? 'Camera access requires HTTPS or localhost. Please ensure you are connected securely.'
+                    : 'Camera API is not supported on this browser.'
+            );
+            return;
+        }
+
+        let testStream = null;
         try {
-            setPermission('pending');
-            setErrorMsg('');
-
-            // Stop any existing scanner
-            if (scannerRef.current) {
-                try {
-                    if (scannerRef.current.isScanning) {
-                        await scannerRef.current.stop();
-                    }
-                } catch (e) {}
-                scannerRef.current = null;
+            testStream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: { ideal: 'environment' } }
+            });
+            // Camera IS accessible — stop probe stream before html5-qrcode takes over
+            testStream.getTracks().forEach(t => t.stop());
+            testStream = null;
+        } catch (probeErr) {
+            if (testStream) {
+                try { testStream.getTracks().forEach(t => t.stop()); } catch (_) {}
             }
 
-            // On mobile Chrome, check actual permission state first via Permissions API
-            if (navigator.permissions) {
-                try {
-                    const status = await navigator.permissions.query({ name: 'camera' });
-                    if (status.state === 'denied') {
-                        setPermission('denied');
-                        setErrorMsg('Camera permission is blocked. Please open Chrome Settings → Site Settings → Camera and allow this site, then reload.');
-                        return;
-                    }
-                } catch (permErr) {
-                    // Permissions API may not support 'camera' on some browsers — proceed
-                }
+            const name = probeErr?.name || '';
+            if (name === 'NotAllowedError' || name === 'PermissionDeniedError') {
+                setStatus('denied');
+                setErrorMsg(
+                    'Camera permission is blocked.\n\n' +
+                    'In Chrome: tap the 🔒 lock icon in the address bar → Site Settings → Camera → set to "Allow", then come back and tap Try Again.'
+                );
+            } else if (name === 'NotFoundError' || name === 'DevicesNotFoundError') {
+                setStatus('denied');
+                setErrorMsg('No camera found on this device.');
+            } else if (name === 'NotReadableError' || name === 'TrackStartError') {
+                // Camera physically in use — still accessible, just busy
+                setStatus('error');
+                setErrorMsg('Camera is being used by another app. Close other apps and try again.');
+            } else {
+                setStatus('error');
+                setErrorMsg(`Could not access camera: ${probeErr?.message || name || 'Unknown error'}. Please try again.`);
+            }
+            return;
+        }
+
+        // ── Step 2: Start html5-qrcode scanner ──
+        setStatus('starting');
+
+        // Small delay to allow the DOM element to settle after state update
+        await new Promise(r => setTimeout(r, 120));
+
+        try {
+            const el = document.getElementById(containerId);
+            if (!el) {
+                setStatus('error');
+                setErrorMsg('Scanner element not found. Please close and reopen the scanner.');
+                return;
             }
 
             const html5QrCode = new Html5Qrcode(containerId);
             scannerRef.current = html5QrCode;
 
-            const qrboxFunction = (viewfinderWidth, viewfinderHeight) => {
-                const minEdgeSize = Math.min(viewfinderWidth, viewfinderHeight);
-                const qrboxSize = Math.floor(minEdgeSize * 0.7);
-                return { width: qrboxSize, height: qrboxSize };
+            const qrConfig = {
+                fps: 15,
+                qrbox: (w, h) => {
+                    const size = Math.floor(Math.min(w, h) * 0.72);
+                    return { width: size, height: size };
+                },
+                aspectRatio: 1.0,
+                disableFlip: false,
             };
 
-            await html5QrCode.start(
-                { facingMode: "environment" },
-                { fps: 15, qrbox: qrboxFunction, aspectRatio: 1.0 },
-                async (decodedText) => {
-                    if (scannerRef.current) {
-                        try {
-                            await scannerRef.current.stop();
-                            scannerRef.current = null;
-                        } catch (e) {}
-                    }
-                    onScan(decodedText);
-                },
-                () => {}
-            );
+            const onScanSuccess = async (decodedText) => {
+                await stopScanner();
+                onScan(decodedText);
+            };
 
-            setPermission('granted');
-        } catch (err) {
-            console.error("QR Scanner Error:", err);
-            const msg = err?.message || String(err);
+            const onScanFailure = () => {};
 
-            // Identify what actually went wrong
-            if (
-                msg.toLowerCase().includes('permission') ||
-                msg.toLowerCase().includes('notallowed') ||
-                msg.toLowerCase().includes('denied')
-            ) {
-                setPermission('denied');
-                setErrorMsg('Camera access was denied. In Chrome, tap the 🔒 lock icon in the address bar → Site Settings → Camera → Allow.');
-            } else if (
-                msg.toLowerCase().includes('notfound') ||
-                msg.toLowerCase().includes('no camera') ||
-                msg.toLowerCase().includes('devicenotfound')
-            ) {
-                setPermission('denied');
-                setErrorMsg('No camera found on this device.');
+            // html5-qrcode expects { facingMode: 'environment' } (string), NOT { facingMode: { ideal: 'environment' } }
+            try {
+                await html5QrCode.start(
+                    { facingMode: 'environment' },
+                    qrConfig,
+                    onScanSuccess,
+                    onScanFailure
+                );
+            } catch (envErr) {
+                console.warn('Environment camera start failed, attempting front camera fallback:', envErr);
+                // Fallback to front/user camera
+                await html5QrCode.start(
+                    { facingMode: 'user' },
+                    qrConfig,
+                    onScanSuccess,
+                    onScanFailure
+                );
+            }
+
+            setStatus('granted');
+        } catch (scanErr) {
+            console.error('html5-qrcode start error:', scanErr);
+            await stopScanner();
+            const errStr = scanErr?.message || String(scanErr);
+            const isPermError = /permission|notallowed|not allowed/i.test(errStr);
+            if (isPermError) {
+                setStatus('denied');
+                setErrorMsg(
+                    'Camera permission is blocked.\n\n' +
+                    'In Chrome: tap the 🔒 lock icon in the address bar → Site Settings → Camera → set to "Allow", then come back and tap Try Again.'
+                );
             } else {
-                // Transient error — let the user retry
-                setPermission('denied');
-                setErrorMsg(`Scanner error: ${msg}. Please try again.`);
+                setStatus('error');
+                setErrorMsg(
+                    `Scanner failed to start: ${errStr}.\nTap Try Again.`
+                );
             }
         }
-    };
+    }, [stopScanner, onScan]);
 
-    // Check permission state on mount; start scanner if already granted
     useEffect(() => {
-        const init = async () => {
-            if (navigator.permissions) {
-                try {
-                    const status = await navigator.permissions.query({ name: 'camera' });
-
-                    if (status.state === 'denied') {
-                        setPermission('denied');
-                        setErrorMsg('Camera permission is blocked. Open Chrome Settings → Site Settings → Camera and allow this site, then reload.');
-                        return;
-                    }
-                    // 'granted' or 'prompt' — attempt to start
-                    startScanner();
-
-                    // Listen for runtime changes
-                    status.onchange = () => {
-                        if (status.state === 'granted') {
-                            startScanner();
-                        } else if (status.state === 'denied') {
-                            setPermission('denied');
-                            setErrorMsg('Camera permission was revoked. Allow it in Chrome site settings.');
-                        }
-                    };
-                    return;
-                } catch (e) {
-                    // Permissions API not supported for camera — fall through
-                }
-            }
-            // Fallback: just try starting
-            startScanner();
-        };
-
-        init();
-
-        return () => {
-            if (scannerRef.current) {
-                try {
-                    if (scannerRef.current.isScanning) {
-                        scannerRef.current.stop().catch(() => {});
-                    }
-                } catch (e) {}
-            }
-        };
+        startScanner();
+        return () => { stopScanner(); };
     }, []);
+
+    const isBlocked = status === 'denied';
+    const isError = status === 'error';
+    const isLoading = status === 'checking' || status === 'starting';
 
     return (
         <motion.div
@@ -145,6 +164,7 @@ const QRScanner = ({ onScan, onClose }) => {
             className='fixed inset-0 z-[100] bg-black/95 backdrop-blur-md flex items-center justify-center p-4'
         >
             <div className='w-full max-w-md bg-white rounded-[2.5rem] overflow-hidden p-6 relative shadow-2xl'>
+                {/* Close */}
                 <button
                     onClick={onClose}
                     className='absolute top-6 right-6 w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center text-gray-600 active:scale-90 transition-all z-20'
@@ -152,49 +172,79 @@ const QRScanner = ({ onScan, onClose }) => {
                     <FaTimes />
                 </button>
 
-                <div className='text-center mb-6'>
+                {/* Header */}
+                <div className='text-center mb-5'>
                     <h3 className='text-xl font-black uppercase tracking-widest text-gray-900'>QR Scanner</h3>
-                    <p className='text-[10px] text-gray-400 font-bold mt-1 uppercase tracking-wider'>Point camera at a QR code</p>
+                    <p className='text-[10px] text-gray-400 font-bold mt-1 uppercase tracking-wider'>
+                        {status === 'granted' ? 'Point camera at the QR code' : 'Setting up camera…'}
+                    </p>
                 </div>
 
-                <div className='relative w-full aspect-square bg-gray-100 rounded-[2rem] overflow-hidden border-2 border-gray-50 shadow-inner flex items-center justify-center'>
+                {/* Viewfinder */}
+                <div className='relative w-full aspect-square bg-gray-100 rounded-[2rem] overflow-hidden border-2 border-gray-50 shadow-inner'>
+                    {/* html5-qrcode always needs this element in the DOM */}
                     <div id={containerId} className='w-full h-full' />
 
-                    {/* Camera blocked / error */}
-                    {permission === 'denied' && (
-                        <div className='absolute inset-0 bg-white/95 flex flex-col items-center justify-center p-6 text-center gap-3'>
-                            <div className='w-14 h-14 rounded-full bg-red-50 flex items-center justify-center'>
-                                <FaCamera className='text-2xl text-red-500' />
+                    {/* Corner guides when scanning */}
+                    {status === 'granted' && (
+                        <>
+                            <div className='pointer-events-none absolute inset-0 flex items-center justify-center'>
+                                <div className='w-[60%] h-[60%] relative'>
+                                    {['tl','tr','bl','br'].map(c => (
+                                        <span key={c} className={`absolute w-7 h-7 border-4 border-orange-500
+                                            ${c==='tl'?'top-0 left-0 border-r-0 border-b-0 rounded-tl-lg':''}
+                                            ${c==='tr'?'top-0 right-0 border-l-0 border-b-0 rounded-tr-lg':''}
+                                            ${c==='bl'?'bottom-0 left-0 border-r-0 border-t-0 rounded-bl-lg':''}
+                                            ${c==='br'?'bottom-0 right-0 border-l-0 border-t-0 rounded-br-lg':''}`}
+                                        />
+                                    ))}
+                                </div>
                             </div>
-                            <p className='text-sm font-black text-gray-800 uppercase tracking-wide'>Camera Access Blocked</p>
-                            <p className='text-xs text-gray-500 font-medium leading-relaxed max-w-xs'>{errorMsg || 'Allow camera access in your browser settings.'}</p>
-                            <button
-                                onClick={startScanner}
-                                className='mt-2 bg-indigo-600 text-white px-6 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest active:scale-95 transition-all'
-                            >
-                                Try Again
-                            </button>
-                        </div>
+                        </>
                     )}
 
-                    {/* Initialising */}
-                    {(permission === 'pending' || permission === 'checking') && (
-                        <div className='absolute inset-0 flex flex-col items-center justify-center p-8 bg-gray-50/80'>
-                            <FaSpinner className='text-indigo-500 text-2xl animate-spin mb-3' />
+                    {/* Loading overlay */}
+                    {isLoading && (
+                        <div className='absolute inset-0 flex flex-col items-center justify-center bg-gray-50/90 gap-3'>
+                            <FaSpinner className='text-indigo-500 text-2xl animate-spin' />
                             <p className='text-[10px] font-black text-indigo-400 uppercase tracking-widest'>
-                                {permission === 'checking' ? 'Checking camera...' : 'Starting scanner...'}
+                                {status === 'checking' ? 'Checking camera access…' : 'Starting scanner…'}
                             </p>
                         </div>
                     )}
+
+                    {/* Denied / Error overlay */}
+                    {(isBlocked || isError) && (
+                        <div className='absolute inset-0 bg-white/97 flex flex-col items-center justify-center p-6 text-center gap-3'>
+                            <div className={`w-14 h-14 rounded-full flex items-center justify-center ${isBlocked ? 'bg-red-50' : 'bg-amber-50'}`}>
+                                <FaCamera className={`text-2xl ${isBlocked ? 'text-red-500' : 'text-amber-500'}`} />
+                            </div>
+                            <p className='text-sm font-black text-gray-800 uppercase tracking-wide'>
+                                {isBlocked ? 'Camera Blocked' : 'Scanner Error'}
+                            </p>
+                            <p className='text-xs text-gray-500 font-medium leading-relaxed max-w-xs whitespace-pre-line'>
+                                {errorMsg}
+                            </p>
+                            <button
+                                onClick={startScanner}
+                                className='mt-1 bg-indigo-600 text-white px-6 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center gap-2 active:scale-95 transition-all'
+                            >
+                                <FaRedo size={10} /> Try Again
+                            </button>
+                        </div>
+                    )}
                 </div>
 
-                <div className='mt-6 bg-indigo-50 p-4 rounded-2xl flex items-center gap-4 border border-indigo-100'>
+                {/* Info bar */}
+                <div className='mt-5 bg-indigo-50 p-4 rounded-2xl flex items-center gap-4 border border-indigo-100'>
                     <div className='w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white shrink-0 shadow-lg'>
                         <FaQrcode size={18} />
                     </div>
                     <div>
-                        <p className='text-[10px] font-black text-indigo-700 uppercase tracking-wider'>Scan to Assign</p>
-                        <p className='text-[9px] font-bold text-indigo-400 mt-0.5 leading-tight'>Point your rear camera at the order QR code to assign delivery.</p>
+                        <p className='text-[10px] font-black text-indigo-700 uppercase tracking-wider'>Scan to Assign Order</p>
+                        <p className='text-[9px] font-bold text-indigo-400 mt-0.5 leading-tight'>
+                            Align the order QR code inside the frame to auto-assign delivery.
+                        </p>
                     </div>
                 </div>
             </div>

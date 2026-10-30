@@ -660,14 +660,27 @@ const UploadProduct = () => {
 
 
           {Object.keys(data.more_details).map((k, index) => (
-            <div className="grid gap-1" key={index}>
-              <label htmlFor={k} className="font-medium">
-                {k}
-              </label>
+            <div className="grid gap-1.5 bg-slate-50/70 p-3 rounded-lg border border-slate-200" key={index}>
+              <div className="flex items-center justify-between">
+                <label htmlFor={k} className="font-semibold text-slate-800 text-sm">
+                  {k}
+                </label>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const next = { ...data.more_details };
+                    delete next[k];
+                    setData((prev) => ({ ...prev, more_details: next }));
+                  }}
+                  className="text-red-500 hover:text-red-700 text-xs font-semibold flex items-center gap-1 transition-colors"
+                >
+                  <IoClose size={16} /> Remove
+                </button>
+              </div>
               <textarea
                 id={k}
-                rows={3}
-                placeholder={`Enter ${k}`}
+                rows={4}
+                placeholder={`Enter ${k} (e.g. 1) Product Name: ... 2) Quantity: ... or each point on a new line)`}
                 value={data.more_details[k]}
                 onChange={(e) => {
                   const value = e.target.value;
@@ -677,8 +690,11 @@ const UploadProduct = () => {
                   }));
                 }}
                 required
-                className="bg-blue-50 p-2 outline-none border focus-within:border-green-200 rounded resize-none"
+                className="bg-white p-2.5 outline-none border focus-within:border-green-300 rounded resize-y text-sm"
               />
+              <p className="text-[11px] text-slate-500">
+                Tip: Enter each specification on a new line or as numbered points (e.g. 1) ..., 2) ...)
+              </p>
             </div>
           ))}
 

@@ -4,6 +4,7 @@ import { FaHome } from 'react-icons/fa';
 import { FaCartShopping, FaGrip, FaShieldHalved, FaUser } from 'react-icons/fa6';
 import { useSelector } from 'react-redux';
 import { useGlobalContext } from '../provider/GlobalProvider';
+import { prefetchRoute } from '../utils/routePrefetch';
 
 const BottomNavigationBar = () => {
     const location = useLocation();
@@ -22,7 +23,12 @@ const BottomNavigationBar = () => {
         <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-slate-200/80 shadow-[0_-4px_25px_rgba(0,0,0,0.05)] z-[100] pb-safe transition-all duration-300">
             <div className="flex h-16 items-center justify-around px-2">
                 
-                <Link to="/" className="flex-1 flex flex-col items-center justify-center gap-1 group transition-colors h-full">
+                <Link
+                    to="/"
+                    onMouseEnter={() => prefetchRoute('/')}
+                    onTouchStart={() => prefetchRoute('/')}
+                    className="flex-1 flex flex-col items-center justify-center gap-1 group transition-colors h-full"
+                >
                     <div className={`relative flex items-center justify-center rounded-2xl p-1.5 transition-all duration-300 active:scale-90 ${isActive('/') ? 'text-orange-600' : 'text-slate-400 group-hover:text-slate-800'}`}>
                         <FaHome size={20} className={`transition-all ${isActive('/') ? 'scale-110' : ''}`} />
                     </div>
@@ -33,6 +39,8 @@ const BottomNavigationBar = () => {
 
                 <button
                     type="button"
+                    onMouseEnter={() => prefetchRoute('/categories')}
+                    onTouchStart={() => prefetchRoute('/categories')}
                     onClick={() => navigate('/categories')}
                     className="group flex h-full flex-1 flex-col items-center justify-center gap-1 transition-colors"
                 >
@@ -44,7 +52,12 @@ const BottomNavigationBar = () => {
                     </span>
                 </button>
 
-                <Link to="/safety-tips" className="flex-1 flex flex-col items-center justify-center gap-1 group transition-colors h-full">
+                <Link
+                    to="/safety-tips"
+                    onMouseEnter={() => prefetchRoute('/safety-tips')}
+                    onTouchStart={() => prefetchRoute('/safety-tips')}
+                    className="flex-1 flex flex-col items-center justify-center gap-1 group transition-colors h-full"
+                >
                     <div className={`flex items-center justify-center rounded-2xl p-1.5 transition-all ${isActive('/safety-tips') ? 'text-orange-600' : 'text-slate-400 group-hover:text-slate-800'}`}>
                         <FaShieldHalved size={19} />
                     </div>
@@ -53,7 +66,12 @@ const BottomNavigationBar = () => {
                     </span>
                 </Link>
 
-                <Link to="/cart" className="flex-1 flex flex-col items-center justify-center gap-1 group transition-colors h-full">
+                <Link
+                    to="/cart"
+                    onMouseEnter={() => prefetchRoute('/cart')}
+                    onTouchStart={() => prefetchRoute('/cart')}
+                    className="flex-1 flex flex-col items-center justify-center gap-1 group transition-colors h-full"
+                >
                     <div className={`relative flex items-center justify-center rounded-2xl p-1.5 transition-all duration-300 active:scale-90 ${isActive('/cart') ? 'text-orange-600' : 'text-slate-400 group-hover:text-slate-800'}`}>
                         <FaCartShopping size={20} className={`transition-all ${isActive('/cart') ? 'scale-110' : ''}`} />
                         {totalQty > 0 && (

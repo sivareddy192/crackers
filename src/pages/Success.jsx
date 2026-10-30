@@ -66,6 +66,15 @@ const Success = () => {
                             </p>
                         </div>
 
+                        <div className='w-full bg-emerald-50 border border-emerald-200 rounded-2xl p-4 text-left space-y-1.5'>
+                            <p className='font-bold text-emerald-900 text-xs flex items-center gap-1.5'>
+                                📞 Team Update Notice
+                            </p>
+                            <p className='text-xs text-emerald-800 leading-relaxed font-medium'>
+                                {location?.state?.subtext || "Our team will contact you shortly to confirm your order details and update you."}
+                            </p>
+                        </div>
+
                         <div className='w-full bg-amber-50 border border-amber-200 rounded-2xl p-4 text-left space-y-1.5'>
                             <p className='font-bold text-amber-900 text-xs flex items-center gap-1.5'>
                                 🚚 Delivery Charges Notice

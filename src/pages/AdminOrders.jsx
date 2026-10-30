@@ -17,6 +17,7 @@ const AdminOrders = () => {
   const [deletingId, setDeletingId] = useState(null);
   const [assigningId, setAssigningId] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [previewImage, setPreviewImage] = useState(null);
 
   const fetchDeliveryBoys = useCallback(async () => {
     try {
@@ -59,6 +60,7 @@ const AdminOrders = () => {
   const groupedOrders = Object.values(
     orders.reduce((acc, order) => {
       const key = order.orderId || order._id;
+      const screenshot = order.payment_screenshot || order.paymentScreenshot || "";
       if (!acc[key]) {
         acc[key] = {
           _id: isHex24(order._id) ? order._id : null,
@@ -70,12 +72,20 @@ const AdminOrders = () => {
           userId: order.userId,
           mobile: order.userId?.mobile || order.address?.phone || "N/A",
           payment_status: order.payment_status || "",
+          payment_screenshot: screenshot,
           deliveryBoyId: order.deliveryBoyId?._id || order.deliveryBoyId,
           deliveryBoyName: order.deliveryBoyId?.name,
           deliveryDate: order.deliveryDate,
           totalAmt: order.totalAmt || 0,
+          customerQuery: order.customerQuery || "",
         };
       } else {
+        if (!acc[key].payment_screenshot && screenshot) {
+          acc[key].payment_screenshot = screenshot;
+        }
+        if (!acc[key].customerQuery && order.customerQuery) {
+          acc[key].customerQuery = order.customerQuery;
+        }
         if (isHex24(order._id) && !acc[key].allItemIds.includes(order._id)) {
           acc[key].allItemIds.push(order._id);
         }
@@ -333,11 +343,31 @@ const AdminOrders = () => {
                                     🚚 Delivery: {new Date(order.deliveryDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
                                 </p>
                             )}
+                            {order.customerQuery && (
+                                <div className="mt-2.5 p-2.5 bg-amber-50 border border-amber-200/80 rounded-xl text-xs text-amber-950 max-w-md">
+                                    <span className="font-black text-[9px] uppercase tracking-wider text-amber-800 block mb-0.5">💬 Customer Query / Note:</span>
+                                    <p className="line-clamp-2 italic font-medium">"{order.customerQuery}"</p>
+                                </div>
+                            )}
                         </div>
-                        <div className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${
-                            isCancelled ? "bg-red-50 text-red-600 border border-red-100" : isDelivered ? "bg-green-50 text-green-700 border border-green-100" : "bg-indigo-50 text-indigo-700 border border-indigo-100"
-                        }`}>
-                            {order.status}
+                        <div className="flex items-center gap-2">
+                            {order.payment_screenshot && (
+                                <a
+                                    href={order.payment_screenshot}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-wider bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 transition-colors flex items-center gap-1"
+                                    title="View Payment Screenshot"
+                                >
+                                    <span>📷 Receipt</span>
+                                </a>
+                            )}
+                            <div className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${
+                                isCancelled ? "bg-red-50 text-red-600 border border-red-100" : isDelivered ? "bg-green-50 text-green-700 border border-green-100" : "bg-indigo-50 text-indigo-700 border border-indigo-100"
+                            }`}>
+                                {order.status}
+                            </div>
                         </div>
                     </div>
 
@@ -362,6 +392,52 @@ const AdminOrders = () => {
                             })}
                         </div>
                     </div>
+
+                    {/* Payment Screenshot Verification Banner */}
+                    {order.payment_screenshot && (
+                        <div 
+                            className="mt-4 p-3.5 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/90 flex items-center justify-between gap-3 transition-all hover:bg-amber-100/60"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setPreviewImage(order.payment_screenshot);
+                            }}
+                        >
+                            <div className="flex items-center gap-3 min-w-0">
+                                <div className="relative w-14 h-14 rounded-xl overflow-hidden bg-white border border-amber-300 shadow-xs shrink-0">
+                                    <img 
+                                        src={order.payment_screenshot} 
+                                        alt="Payment Receipt" 
+                                        className="w-full h-full object-cover hover:scale-105 transition-transform"
+                                    />
+                                </div>
+                                <div className="min-w-0">
+                                    <div className="flex items-center gap-1.5 flex-wrap">
+                                        <span className="px-2 py-0.5 rounded-md bg-amber-200 text-amber-900 text-[9px] font-black uppercase tracking-wider">
+                                            📷 UPI Screenshot Attached
+                                        </span>
+                                        <span className="text-[10px] font-black text-gray-800">
+                                            ₹{order.totalAmt || 0}
+                                        </span>
+                                    </div>
+                                    <p className="text-xs font-bold text-gray-800 mt-1 truncate">
+                                        Tap to inspect receipt & verify
+                                    </p>
+                                </div>
+                            </div>
+
+                            <button
+                                type="button"
+                                className="px-3 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 active:scale-95 text-white text-[10px] font-black uppercase tracking-wider transition-all shadow-xs shrink-0 cursor-pointer flex items-center gap-1"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    setPreviewImage(order.payment_screenshot);
+                                }}
+                            >
+                                <span>Inspect</span>
+                                <span>↗</span>
+                            </button>
+                        </div>
+                    )}
                 </div>
 
                 {/* Card Footer - Controls */}
@@ -464,6 +540,51 @@ const AdminOrders = () => {
             );
         })}
       </div>
+
+      {/* Payment Screenshot Modal */}
+      {previewImage && (
+        <div 
+            className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
+            onClick={() => setPreviewImage(null)}
+        >
+            <div 
+                className="bg-white rounded-3xl max-w-2xl w-full p-6 shadow-2xl relative max-h-[90vh] flex flex-col"
+                onClick={(e) => e.stopPropagation()}
+            >
+                <div className="flex items-center justify-between pb-3 border-b border-gray-100 mb-4">
+                    <div>
+                        <h3 className="text-sm font-black uppercase tracking-wider text-gray-900">Payment Screenshot Verification</h3>
+                        <p className="text-[10px] text-gray-400 font-bold">Review customer's uploaded UPI receipt</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <a
+                            href={previewImage}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-3 py-1.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1"
+                        >
+                            <span>Open Original</span>
+                            <span>↗</span>
+                        </a>
+                        <button
+                            onClick={() => setPreviewImage(null)}
+                            className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700 flex items-center justify-center font-bold text-sm cursor-pointer"
+                        >
+                            ✕
+                        </button>
+                    </div>
+                </div>
+
+                <div className="flex-1 overflow-auto rounded-2xl bg-gray-50 border border-gray-100 p-2 flex items-center justify-center min-h-[300px]">
+                    <img 
+                        src={previewImage} 
+                        alt="Payment Proof" 
+                        className="max-h-[65vh] w-auto object-contain rounded-xl shadow-xs" 
+                    />
+                </div>
+            </div>
+        </div>
+      )}
     </div>
   );
 };

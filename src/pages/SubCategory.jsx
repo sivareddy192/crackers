@@ -31,7 +31,9 @@ const SubCategoryPage = () => {
     try {
       setLoading(true);
       const response = await Axios({
-        ...SummaryApi.getSubCategory
+        ...SummaryApi.getSubCategory,
+        params: { t: Date.now() },
+        headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }
       }); 
 
       const { data: responseData } = response;
@@ -126,22 +128,33 @@ const SubCategoryPage = () => {
   
 
   const handleDeleteSubCategory = async () => {
+    const targetId = deleteSubCategory?._id;
+    if (!targetId) return;
+
     try {
+      // Optimistic update
+      setData(prev => prev.filter(s => s._id !== targetId));
+      setOpenDeleteConfirmBox(false);
+
       const response = await Axios({
         ...SummaryApi.deleteSubCategory,
-        data: deleteSubCategory
+        data: { _id: targetId },
+        params: { _id: targetId }
       });
 
       const { data: responseData } = response;
 
       if (responseData.success) {
-        toast.success(responseData.message);
+        toast.success(responseData.message || "Subcategory deleted successfully");
         fetchSubCategory();
-        setOpenDeleteConfirmBox(false);
         setDeleteSubCategory({ _id: "" });
+      } else {
+        toast.error(responseData.message || "Failed to delete subcategory");
+        fetchSubCategory();
       }
     } catch (error) {
       AxiosToastError(error);
+      fetchSubCategory();
     }
   };
 

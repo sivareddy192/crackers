@@ -63,8 +63,10 @@ const EditCategory = ({ close, fetchData, data: CategoryData }) => {
 
       if (responseData.success) {
         toast.success(responseData.message)
+        if (fetchData) {
+          fetchData(responseData.data);
+        }
         close && close()
-        fetchData && fetchData()
       }
 
     } catch (error) {

@@ -34,6 +34,7 @@ const AdminOrderDetails = () => {
     const [updating, setUpdating] = useState(false);
     const [deliveryBoys, setDeliveryBoys] = useState([]);
     const [assigning, setAssigning] = useState(false);
+    const [previewModal, setPreviewModal] = useState(null);
 
     const fetchOrderDetails = useCallback(async () => {
         if (!orderId) {
@@ -311,10 +312,12 @@ const AdminOrderDetails = () => {
     const totalAmount = mainOrder.totalAmt || itemsSubtotal;
     const isCancelled = (mainOrder.status || "").toLowerCase() === "cancelled";
     const activeIndex = statusSteps.findIndex(s => s.toLowerCase() === (mainOrder.status || "").toLowerCase());
+    const screenshotUrl = mainOrder.payment_screenshot || mainOrder.paymentScreenshot || orderItems.find(i => i.payment_screenshot || i.paymentScreenshot)?.payment_screenshot || orderItems.find(i => i.payment_screenshot || i.paymentScreenshot)?.paymentScreenshot || "";
 
     const customerName = mainOrder.userId?.name || mainOrder.address?.name || "Customer";
     const customerEmail = mainOrder.userId?.email || "Not Provided";
     const customerMobile = mainOrder.userId?.mobile || mainOrder.delivery_address?.mobile || mainOrder.address?.phone || "N/A";
+    const customerQuery = mainOrder.customerQuery || orderItems.find(i => i.customerQuery)?.customerQuery || "";
 
     const addressLine = mainOrder.delivery_address?.address_line || mainOrder.delivery_address?.address_line1 || mainOrder.address?.street || "N/A";
     const addressCity = mainOrder.delivery_address?.city || mainOrder.address?.city || "N/A";
@@ -388,6 +391,85 @@ const AdminOrderDetails = () => {
             <div className='p-6 lg:p-12 max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8'>
                 {/* Left 2 Columns */}
                 <div className='lg:col-span-2 space-y-8'>
+                    {/* Payment Screenshot Verification Card */}
+                    {screenshotUrl && (
+                        <div className='bg-gradient-to-br from-amber-500/10 via-orange-500/5 to-white rounded-3xl p-6 lg:p-8 border-2 border-amber-300 shadow-sm relative overflow-hidden'>
+                            <div className='flex items-center justify-between mb-5 flex-wrap gap-3'>
+                                <div className='flex items-center gap-3'>
+                                    <div className='w-11 h-11 rounded-2xl bg-amber-500 text-white flex items-center justify-center text-xl shadow-md shadow-amber-500/20'>
+                                        📷
+                                    </div>
+                                    <div>
+                                        <div className='flex items-center gap-2'>
+                                            <h2 className='text-sm font-black text-gray-900 uppercase tracking-widest'>
+                                                Payment Screenshot Proof
+                                            </h2>
+                                            <span className='px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-amber-100 text-amber-800 border border-amber-300'>
+                                                Verify Receipt
+                                            </span>
+                                        </div>
+                                        <p className='text-[10px] text-gray-500 font-bold mt-0.5'>
+                                            Customer attached this screenshot as proof of UPI payment
+                                        </p>
+                                    </div>
+                                </div>
+                                <div className='flex items-center gap-2'>
+                                    <button
+                                        type='button'
+                                        onClick={() => setPreviewModal(screenshotUrl)}
+                                        className='px-3.5 py-2 rounded-xl bg-gray-900 hover:bg-gray-800 text-white text-[10px] font-black uppercase tracking-wider shadow-xs transition-colors cursor-pointer'
+                                    >
+                                        🔍 Zoom Preview
+                                    </button>
+                                    <a
+                                        href={screenshotUrl}
+                                        target='_blank'
+                                        rel='noopener noreferrer'
+                                        className='px-3.5 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-[10px] font-black uppercase tracking-wider shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer'
+                                    >
+                                        <span>Open Full Image</span>
+                                        <span>↗</span>
+                                    </a>
+                                </div>
+                            </div>
+
+                            {/* Prominent Image Preview */}
+                            <div 
+                                className='rounded-2xl overflow-hidden bg-gray-900/5 border border-gray-200/80 p-3 flex items-center justify-center cursor-pointer group relative'
+                                onClick={() => setPreviewModal(screenshotUrl)}
+                            >
+                                <img 
+                                    src={screenshotUrl} 
+                                    alt='Customer Payment Screenshot' 
+                                    className='max-h-96 w-auto object-contain rounded-xl shadow-md group-hover:scale-[1.01] transition-transform'
+                                />
+                                <div className='absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-bold gap-2 backdrop-blur-xs rounded-2xl'>
+                                    <span>🔍 Click to View Full Screen</span>
+                                </div>
+                            </div>
+
+                            {/* Summary strip below image */}
+                            <div className='mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3 bg-white/80 backdrop-blur-sm p-4 rounded-2xl border border-amber-200/70 text-center'>
+                                <div>
+                                    <p className='text-[9px] font-black uppercase tracking-wider text-gray-400'>Order Amount</p>
+                                    <p className='text-sm font-black text-gray-900 mt-0.5'>₹{totalAmount}</p>
+                                </div>
+                                <div>
+                                    <p className='text-[9px] font-black uppercase tracking-wider text-gray-400'>Payment Method</p>
+                                    <p className='text-xs font-bold text-gray-800 mt-0.5'>{mainOrder.payment_status || "UPI"}</p>
+                                </div>
+                                <div>
+                                    <p className='text-[9px] font-black uppercase tracking-wider text-gray-400'>Txn / Ref ID</p>
+                                    <p className='text-xs font-mono font-bold text-gray-800 mt-0.5 truncate'>{mainOrder.paymentId || "N/A"}</p>
+                                </div>
+                                <div>
+                                    <p className='text-[9px] font-black uppercase tracking-wider text-gray-400'>Customer Phone</p>
+                                    <p className='text-xs font-bold text-gray-800 mt-0.5 truncate'>{customerMobile}</p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
                     {/* Status Stepper Card */}
                     <div className='bg-white rounded-3xl p-6 lg:p-8 border border-gray-100 shadow-xs'>
                         <h2 className='text-xs font-black text-gray-400 uppercase tracking-[3px] mb-6'>
@@ -450,6 +532,12 @@ const AdminOrderDetails = () => {
                                         {customerMobile}
                                     </p>
                                 </div>
+                                {customerQuery && (
+                                    <div className='mt-3 p-3.5 bg-amber-50 border border-amber-200 rounded-2xl'>
+                                        <p className='text-[9px] font-black text-amber-800 uppercase tracking-widest mb-1'>💬 Customer Query / Instructions</p>
+                                        <p className='text-xs font-semibold text-amber-950 whitespace-pre-wrap leading-relaxed'>"{customerQuery}"</p>
+                                    </div>
+                                )}
                             </div>
                         </section>
 
@@ -699,6 +787,35 @@ const AdminOrderDetails = () => {
                                     Txn ID: {mainOrder.paymentId}
                                 </p>
                             )}
+
+                            {mainOrder.payment_screenshot && (
+                                <div className='pt-3 border-t border-white/10'>
+                                    <p className='text-[10px] font-black text-gray-400 uppercase tracking-[2px] mb-2'>
+                                        Payment Screenshot Proof
+                                    </p>
+                                    <a
+                                        href={mainOrder.payment_screenshot}
+                                        target='_blank'
+                                        rel='noopener noreferrer'
+                                        className='block bg-white/10 hover:bg-white/15 p-2 rounded-2xl border border-white/15 transition-all group'
+                                    >
+                                        <div className='flex items-center gap-3'>
+                                            <img
+                                                src={mainOrder.payment_screenshot}
+                                                alt='Payment Proof'
+                                                className='w-14 h-14 object-cover rounded-xl border border-white/20 group-hover:scale-105 transition-transform'
+                                            />
+                                            <div className='min-w-0 flex-1'>
+                                                <p className='text-xs font-bold text-white group-hover:text-indigo-300 transition-colors flex items-center gap-1'>
+                                                    <span>View Screenshot</span>
+                                                    <span>↗</span>
+                                                </p>
+                                                <p className='text-[10px] text-gray-400'>Click to open full image</p>
+                                            </div>
+                                        </div>
+                                    </a>
+                                </div>
+                            )}
                         </div>
                     </section>
 
@@ -750,8 +867,57 @@ const AdminOrderDetails = () => {
                         </div>
                     </section>
                 </div>
-            </div>
         </div>
+
+        {/* Zoom Lightbox Modal */}
+        {previewModal && (
+            <div 
+                className='fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4'
+                onClick={() => setPreviewModal(null)}
+            >
+                <div 
+                    className='bg-white rounded-3xl max-w-3xl w-full p-6 shadow-2xl relative max-h-[92vh] flex flex-col'
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    <div className='flex items-center justify-between pb-3 border-b border-gray-100 mb-4'>
+                        <div>
+                            <h3 className='text-sm font-black uppercase tracking-wider text-gray-900'>
+                                Payment Screenshot #{mainOrder.orderId || orderId}
+                            </h3>
+                            <p className='text-[10px] text-gray-400 font-bold'>
+                                Customer: {customerName} • Total: ₹{totalAmount}
+                            </p>
+                        </div>
+                        <div className='flex items-center gap-2'>
+                            <a
+                                href={previewModal}
+                                target='_blank'
+                                rel='noopener noreferrer'
+                                className='px-3.5 py-1.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 transition-colors'
+                            >
+                                <span>Open Original</span>
+                                <span>↗</span>
+                            </a>
+                            <button
+                                onClick={() => setPreviewModal(null)}
+                                className='w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700 flex items-center justify-center font-bold text-sm cursor-pointer'
+                            >
+                                ✕
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className='flex-1 overflow-auto rounded-2xl bg-gray-50 border border-gray-100 p-2 flex items-center justify-center min-h-[350px]'>
+                        <img 
+                            src={previewModal} 
+                            alt='Payment Proof Full' 
+                            className='max-h-[70vh] w-auto object-contain rounded-xl shadow-xs' 
+                        />
+                    </div>
+                </div>
+            </div>
+        )}
+    </div>
     );
 };
 

@@ -40,7 +40,8 @@ export const getImageUrl = (image, { width, quality = "auto" } = {}) => {
                     const hasTransformKey = /(^|,)(a|b|c|dpr|e|f|fl|g|h|l|o|q|r|t|u|w|x|y|z)_/.test(nextSegment);
                     const isTransform = hasTransformKey && !isVersion;
 
-                    const targetWidth = Number(width);
+                    // Default max-dimension cap of 600px prevents multi-megabyte unscaled images
+                    const targetWidth = Number(width) || (width === null ? null : 600);
                     const hasValidWidth = Number.isFinite(targetWidth) && targetWidth > 0;
 
                     const existingParts = isTransform

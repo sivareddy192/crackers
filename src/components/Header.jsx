@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react'
+import traceAvif from "../assets/trace-logo.avif"
 import trace from "../assets/trace-logo.png"
-import logoPng from "../assets/trace-logo.png"
 import Search from './Search'
 import { Link, useNavigate } from 'react-router-dom'
 import { FaCartShopping } from "react-icons/fa6";
@@ -9,6 +9,7 @@ import { FaRegUserCircle } from "react-icons/fa";
 import UserMenu from './UserMenu';
 import { getImageUrl } from '../utils/getImageUrl';
 import { useGlobalContext } from '../provider/GlobalProvider';
+import { prefetchRoute } from '../utils/routePrefetch';
 
 const Header = () => {
   const navigate = useNavigate()
@@ -58,7 +59,7 @@ const Header = () => {
 
           <Link to={"/"} aria-label="Tracly Home" className='shrink-0 transition-transform active:scale-95 flex items-center'>
             <picture>
-              <source srcSet={trace} type="image/avif" />
+              <source srcSet={traceAvif} type="image/avif" />
               <img
                 src={trace}
                 width="144"
@@ -80,6 +81,8 @@ const Header = () => {
             <div className='flex lg:hidden items-center gap-3'>
               <button
                 type='button'
+                onMouseEnter={() => prefetchRoute('/cart')}
+                onTouchStart={() => prefetchRoute('/cart')}
                 onClick={() => navigate('/cart')}
                 aria-label={`Open cart${totalQty ? `, ${totalQty} items` : ''}`}
                 className='relative flex h-9 w-9 items-center justify-center text-slate-900 cursor-pointer'
@@ -93,6 +96,8 @@ const Header = () => {
               </button>
               <button 
                 type="button"
+                onMouseEnter={() => prefetchRoute('/user-menu')}
+                onTouchStart={() => prefetchRoute('/user-menu')}
                 onClick={handleMobileUser} 
                 aria-label="User Account"
                 className='rounded-full p-1 text-slate-800 transition-transform active:scale-90 cursor-pointer'
@@ -114,12 +119,17 @@ const Header = () => {
             </div>
 
             <div className='hidden lg:flex items-center gap-4 justify-end'>
-              <Link to='/safety-tips' className='whitespace-nowrap text-sm font-bold text-slate-600 transition-colors hover:text-orange-600'>
+              <Link
+                to='/safety-tips'
+                onMouseEnter={() => prefetchRoute('/safety-tips')}
+                className='whitespace-nowrap text-sm font-bold text-slate-600 transition-colors hover:text-orange-600'
+              >
                 Safety Tips
               </Link>
               
               <button
                 type='button'
+                onMouseEnter={() => prefetchRoute('/cart')}
                 onClick={() => navigate('/cart')}
                 aria-label={`Open cart${totalQty ? `, ${totalQty} items` : ''}`}
                 className='relative flex h-11 w-11 items-center justify-center rounded-full text-slate-900 transition-colors hover:bg-orange-50 hover:text-orange-600 active:scale-95 cursor-pointer'

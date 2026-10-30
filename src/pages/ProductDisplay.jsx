@@ -26,6 +26,7 @@ import CategoryWiseProductDisplay from "../components/CategoryWiseProductDisplay
 import ProductLoading from "../components/ProductLoading"
 import ReviewsSection from "../components/ReviewsSection"
 import { getCachedProduct, setCachedProduct } from "../utils/productCache"
+import { parseSpecificationPoints } from "../utils/specificationParser"
 
 const detailTabs = ["Description", "Specifications", "Reviews", "FAQs"]
 const MotionDiv = framerMotion.div
@@ -70,6 +71,26 @@ const ProductDisplay = () => {
   const originalPrice = Number(data?.mrp || data?.price || 0)
   const currentPrice = Number(data?.price || 0)
   const details = Object.entries(data?.more_details || {}).filter(([, value]) => value !== "" && value != null)
+  const highlightItems = useMemo(() => {
+    const items = []
+    for (const [label, value] of details) {
+      const pts = parseSpecificationPoints(value)
+      if (pts.length > 1) {
+        for (const pt of pts) {
+          items.push({
+            label: pt.label || label.replace(/:\s*$/, ""),
+            value: pt.value || pt.raw
+          })
+        }
+      } else {
+        items.push({
+          label: pts[0]?.label || label.replace(/:\s*$/, ""),
+          value: pts[0]?.value || String(value)
+        })
+      }
+    }
+    return items
+  }, [details])
   const category = Array.isArray(data?.category) ? data.category[0] : data?.category
   const isInStock = Number(data?.stock) > 0
   const discountPercent = getDiscountPercent(data?.mrp, data?.price)
@@ -388,7 +409,7 @@ const ProductDisplay = () => {
                       width="500"
                       height="500"
                       loading={index === 0 ? "eager" : "lazy"}
-                      fetchPriority={index === 0 ? "high" : "auto"}
+                      fetchPriority={index === 0 ? "high" : undefined}
                       decoding="async"
                       className="h-full w-full object-contain"
                     />
@@ -464,19 +485,19 @@ const ProductDisplay = () => {
               <p className="mt-4 line-clamp-4 text-sm leading-6 text-slate-600">{data.description}</p>
             )}
 
-            {details.length > 0 && (
+            {highlightItems.length > 0 && (
               <div className="mt-5 grid grid-cols-2 gap-2.5">
-                {details.slice(0, 4).map(([label, value], index) => {
+                {highlightItems.slice(0, 4).map((item, index) => {
                   const icons = [FaBolt, FaBoxOpen, FaCircleCheck, FaShieldHalved]
                   const FeatureIcon = icons[index % icons.length]
                   return (
-                    <div key={label} className="flex min-w-0 items-center gap-2.5">
+                    <div key={`${item.label}-${index}`} className="flex min-w-0 items-center gap-2.5">
                       <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-orange-50 text-orange-600">
                         <FeatureIcon className="h-4 w-4" />
                       </span>
                       <div className="min-w-0">
-                        <p className="truncate text-[11px] font-extrabold text-slate-800">{label}</p>
-                        <p className="line-clamp-2 text-[10px] leading-4 text-slate-500">{String(value)}</p>
+                        <p className="truncate text-[11px] font-extrabold text-slate-800">{item.label}</p>
+                        <p className="line-clamp-2 text-[10px] leading-4 text-slate-500">{item.value}</p>
                       </div>
                     </div>
                   )
@@ -592,14 +613,57 @@ const ProductDisplay = () => {
             )}
             {activeTab === "Specifications" && (
               details.length ? (
-                <dl className="grid max-w-4xl gap-x-10 sm:grid-cols-2">
-                  {details.map(([label, value]) => (
-                    <div key={label} className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-4 border-b border-slate-100 py-3 text-sm">
-                      <dt className="font-bold text-slate-500">{label}</dt>
-                      <dd className="break-words font-semibold text-slate-800">{String(value)}</dd>
-                    </div>
-                  ))}
-                </dl>
+                <div className="max-w-4xl divide-y divide-slate-100">
+                  {details.map(([label, value]) => {
+                    const points = parseSpecificationPoints(value)
+                    const cleanLabel = label.replace(/:\s*$/, "")
+                    const isMultiPoint = points.length > 1
+
+                    return (
+                      <div key={label} className="py-4 first:pt-1 last:pb-1">
+                        <div className="grid grid-cols-1 sm:grid-cols-[180px_1fr] md:grid-cols-[220px_1fr] gap-2 sm:gap-6 text-sm">
+                          <dt className="font-bold text-slate-500 sm:pt-0.5">
+                            {cleanLabel}:
+                          </dt>
+                          <dd className="break-words">
+                            {isMultiPoint ? (
+                              <ul className="space-y-2.5">
+                                {points.map((pt, idx) => (
+                                  <li key={idx} className="flex items-start gap-2.5">
+                                    <span className="font-bold text-orange-600 shrink-0 select-none">
+                                      {pt.prefix || `${idx + 1})`}
+                                    </span>
+                                    <div className="flex-1 leading-relaxed">
+                                      {pt.label ? (
+                                        <>
+                                          <span className="font-bold text-slate-700">{pt.label}: </span>
+                                          <span className="font-semibold text-slate-900">{pt.value}</span>
+                                        </>
+                                      ) : (
+                                        <span className="font-semibold text-slate-900">{pt.value}</span>
+                                      )}
+                                    </div>
+                                  </li>
+                                ))}
+                              </ul>
+                            ) : (
+                              <div className="font-semibold text-slate-800 whitespace-pre-line leading-relaxed">
+                                {points[0]?.label ? (
+                                  <>
+                                    <span className="font-bold text-slate-700">{points[0].label}: </span>
+                                    <span className="text-slate-900">{points[0].value}</span>
+                                  </>
+                                ) : (
+                                  String(value)
+                                )}
+                              </div>
+                            )}
+                          </dd>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
               ) : <p className="text-sm text-slate-500">No specifications are available.</p>
             )}
             {activeTab === "Reviews" && (

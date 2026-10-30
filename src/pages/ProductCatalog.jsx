@@ -8,6 +8,7 @@ import ProductLoading from "../components/ProductLoading"
 import SummaryApi from "../common/SummaryApi"
 import Axios from "../utils/Axios"
 import AxiosToastError from "../utils/AxiosToastError"
+import { getApiCache, setApiCache } from "../utils/apiCache"
 
 const PAGE_SIZE = 12
 
@@ -19,11 +20,19 @@ const ProductCatalog = () => {
     () => new URLSearchParams(location.search).getAll("category"),
     [location.search]
   )
-  const [products, setProducts] = useState([])
-  const [totalCount, setTotalCount] = useState(0)
+
+  const cachedDefault = useMemo(() => {
+    if (categoryFromUrl.length === 0) {
+      return getApiCache("catalog_default")
+    }
+    return null
+  }, [categoryFromUrl.length])
+
+  const [products, setProducts] = useState(() => cachedDefault?.data || [])
+  const [totalCount, setTotalCount] = useState(() => cachedDefault?.totalCount || 0)
   const [page, setPage] = useState(1)
-  const [totalPage, setTotalPage] = useState(1)
-  const [loading, setLoading] = useState(true)
+  const [totalPage, setTotalPage] = useState(() => cachedDefault?.totalPage || 1)
+  const [loading, setLoading] = useState(() => !cachedDefault)
   const [filtersOpen, setFiltersOpen] = useState(false)
   const [searchInput, setSearchInput] = useState("")
   const [search, setSearch] = useState("")
@@ -62,6 +71,10 @@ const ProductCatalog = () => {
       setProducts(previous => page === 1 ? responseData.data : [...previous, ...responseData.data])
       setTotalCount(responseData.totalCount)
       setTotalPage(responseData.totalPage)
+
+      if (page === 1 && !search && filters.categoryIds.length === 0 && !filters.minPrice && !filters.maxPrice && filters.sort === "featured" && !filters.offersOnly) {
+        setApiCache("catalog_default", { data: responseData.data, totalCount: responseData.totalCount, totalPage: responseData.totalPage }, 300)
+      }
     } catch (error) {
       if (error.code !== "ERR_CANCELED") {
         AxiosToastError(error)

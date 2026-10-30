@@ -7,7 +7,7 @@ import { getImageUrl } from '../utils/getImageUrl'
 import AddToCartButton from './AddToCartButton'
 import { FaHeart, FaRegHeart } from 'react-icons/fa'
 
-const ProductBox = ({ data, catalog = false }) => {
+const ProductBox = ({ data, catalog = false, priority = false }) => {
   const [isFavorite, setIsFavorite] = useState(false)
 
   const url = `/product/${valideURLConvert(data.name)}-${data._id}`
@@ -68,7 +68,7 @@ const ProductBox = ({ data, catalog = false }) => {
             alt={data.name}
             width="320"
             height="320"
-            loading="lazy"
+            loading={priority ? "eager" : "lazy"}
             decoding="async"
             className="relative z-10 w-full h-full object-contain transition-transform duration-500 group-hover:scale-108"
           />

@@ -101,18 +101,28 @@ const OrderDetails = () => {
                                     </p>
                                 )}
                             </div>
-                            <div className='flex items-center gap-3'>
+                            <div className='flex items-center gap-2 flex-wrap justify-end'>
+                                {mainOrder.payment_screenshot && (
+                                    <a
+                                        href={mainOrder.payment_screenshot}
+                                        target='_blank'
+                                        rel='noopener noreferrer'
+                                        className='px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100 transition-colors shadow-xs flex items-center gap-1'
+                                    >
+                                        <span>📷 Receipt</span>
+                                    </a>
+                                )}
                                 <span className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border ${
                                     mainOrder.payment_status === 'CASH ON DELIVERY' 
                                     ? 'bg-orange-50 text-orange-700 border-orange-100' 
-                                    : 'bg-blue-50 text-blue-700 border-blue-100'
-                                } shadow-sm`}>
-                                    {mainOrder.payment_status === 'CASH ON DELIVERY' ? 'Cash on Delivery' : 'Paid Online'}
+                                    : 'bg-emerald-50 text-emerald-700 border-emerald-100'
+                                } shadow-xs`}>
+                                    {mainOrder.payment_status || 'Paid Online'}
                                 </span>
                                 <span className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border ${
                                     mainOrder.status === 'Delivered' ? 'bg-green-50 text-green-700 border-green-100' : 
                                     mainOrder.status === 'Cancelled' ? 'bg-red-50 text-red-700 border-red-100' : 'bg-blue-50 text-blue-700 border-blue-100'
-                                } shadow-sm`}>
+                                } shadow-xs`}>
                                     {mainOrder.status}
                                 </span>
                             </div>

@@ -10,6 +10,9 @@ import Axios from '../utils/Axios'
 import SummaryApi from '../common/SummaryApi'
 import toast from 'react-hot-toast'
 import { useNavigate } from 'react-router-dom'
+import uploadImage from '../utils/UploadImage'
+import upiQr1 from '../assets/upi-qr-1.jpg'
+import upiQr2 from '../assets/upi-qr-2.jpg'
 import {
   Truck,
   ShieldCheck,
@@ -21,7 +24,18 @@ import {
   Plus,
   ArrowRight,
   AlertCircle,
-  CheckCircle2
+  CheckCircle2,
+  QrCode,
+  UploadCloud,
+  Copy,
+  Check,
+  Lock,
+  Image as ImageIcon,
+  RefreshCw,
+  ExternalLink,
+  PhoneCall,
+  MessageSquare,
+  HelpCircle
 } from 'lucide-react'
 
 const CheckoutPage = () => {
@@ -50,6 +64,102 @@ const CheckoutPage = () => {
   const totalCartQty = cartItemsList.reduce((sum, item) => sum + (item.quantity || 1), 0)
   const navigate = useNavigate()
   const token = localStorage.getItem('accessToken')
+
+  // UPI QR Code and Payment Screenshot state (Kept for reference, commented out in UI)
+  const fileInputRef = React.useRef(null)
+  const [selectedQr, setSelectedQr] = useState('qr1') // 'qr1' or 'qr2'
+  const [paymentScreenshot, setPaymentScreenshot] = useState('')
+  const [screenshotPreview, setScreenshotPreview] = useState('')
+  const [uploadingScreenshot, setUploadingScreenshot] = useState(false)
+  const [transactionId, setTransactionId] = useState('')
+  const [copiedUpi, setCopiedUpi] = useState(false)
+  // Customer Query / Instructions state
+  const [customerQuery, setCustomerQuery] = useState('')
+
+  const upiOptions = [
+    {
+      id: 'qr1',
+      name: 'Option 1 (SLC)',
+      upiId: '7095736374siva@slc',
+      image: upiQr1,
+      appName: 'GPay / PhonePe / Paytm / BHIM'
+    },
+    {
+      id: 'qr2',
+      name: 'Option 2 (Navi / Axis)',
+      upiId: '7095736374@naviaxis',
+      image: upiQr2,
+      appName: 'Any UPI App'
+    }
+  ]
+
+  const activeQr = upiOptions.find(o => o.id === selectedQr) || upiOptions[0]
+
+  const handleCopyUpi = (upiId) => {
+    navigator.clipboard.writeText(upiId)
+    setCopiedUpi(true)
+    toast.success('UPI ID copied to clipboard!')
+    setTimeout(() => setCopiedUpi(false), 2500)
+  }
+
+  const handleScreenshotUpload = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please upload an image file (PNG, JPG, JPEG, WEBP).')
+      return
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('File size must be under 10MB.')
+      return
+    }
+
+    const localUrl = URL.createObjectURL(file)
+    setScreenshotPreview(localUrl)
+
+    try {
+      setUploadingScreenshot(true)
+      const uploadToastId = toast.loading('Uploading payment screenshot...', { id: 'upload-ss' })
+      const res = await uploadImage(file)
+      toast.dismiss('upload-ss')
+
+      let uploadedUrl = res?.data?.data?.url || res?.data?.data || res?.data?.url
+      if (!uploadedUrl && typeof res?.data?.data === 'string') {
+        uploadedUrl = res.data.data
+      }
+
+      if (uploadedUrl) {
+        setPaymentScreenshot(uploadedUrl)
+        toast.success('Payment screenshot uploaded! You can now confirm your order.')
+      } else {
+        // Fallback: convert file to Base64 Data URL so user is never blocked
+        const reader = new FileReader()
+        reader.onloadend = () => {
+          setPaymentScreenshot(reader.result)
+          toast.success('Payment screenshot attached! You can now confirm your order.')
+        }
+        reader.readAsDataURL(file)
+      }
+    } catch (err) {
+      console.error('Screenshot upload error:', err)
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setPaymentScreenshot(reader.result)
+        toast.success('Payment screenshot attached! You can now confirm your order.')
+      }
+      reader.readAsDataURL(file)
+    } finally {
+      setUploadingScreenshot(false)
+    }
+  }
+
+  const handleRemoveScreenshot = () => {
+    setPaymentScreenshot('')
+    setScreenshotPreview('')
+    if (fileInputRef.current) fileInputRef.current.value = ''
+  }
 
   useEffect(() => {
     if (!token) {
@@ -111,6 +221,66 @@ const CheckoutPage = () => {
     return { price: mrp, discountedPrice: price, discount }
   }
 
+  const handleConfirmUpiOrder = async () => {
+    if (processing) return
+    if (totalPrice < MIN_ORDER_VALUE) {
+      toast.error(`Minimum order amount is ₹${MIN_ORDER_VALUE.toLocaleString('en-IN')}. Please add ₹${Number(MIN_ORDER_VALUE - totalPrice).toLocaleString('en-IN')} more to proceed.`)
+      return
+    }
+    if (selectAddress === null || !addressList[selectAddress]) {
+      toast.error('Please select a delivery address')
+      return
+    }
+
+    try {
+      setProcessing(true)
+      toast.loading('Submitting your order & query...', { id: 'order-submit-load' })
+
+      const response = await Axios({
+        ...SummaryApi.upiOrder,
+        data: {
+          list_items: cartItemsList,
+          addressId: addressList[selectAddress]?._id,
+          subTotalAmt: totalPrice,
+          totalAmt: grandTotal,
+          discountAmt: couponDiscount,
+          couponCode: appliedCoupon?.code || appliedCoupon?.couponCode || '',
+          couponId: appliedCoupon?._id,
+          deliveryCharge: deliveryCharge,
+          handlingCharge: handlingCharge,
+          customerQuery: customerQuery.trim(),
+          payment_screenshot: '',
+          payment_status: 'Query Submitted (Pending Call)',
+          paymentId: `QUERY-${Date.now().toString().slice(-6)}`
+        }
+      })
+
+      const { data: responseData } = response
+
+      if (responseData.success) {
+        toast.dismiss('order-submit-load')
+        toast.success(responseData.message || 'Order & query submitted successfully! Our team will contact you shortly.')
+        if (setAppliedCoupon) setAppliedCoupon(null)
+        if (fetchCartItem) fetchCartItem()
+        if (fetchOrder) fetchOrder()
+        if (fetchUser) fetchUser()
+
+        navigate('/success', {
+          state: { 
+            text: 'Order',
+            subtext: 'Submit your query using Confirm Order. After that, our team will contact you and update you.'
+          }
+        })
+      }
+    } catch (error) {
+      toast.dismiss('order-submit-load')
+      AxiosToastError(error)
+    } finally {
+      setProcessing(false)
+    }
+  }
+
+  // Stripe & COD payment handlers (kept defined so they can be re-enabled whenever needed)
   const handleCashOnDelivery = async () => {
     if (processing) return
     try {
@@ -568,7 +738,7 @@ const CheckoutPage = () => {
 
             </div>
 
-            <div className='space-y-3 pt-6'>
+            <div className='pt-6 space-y-4'>
               {isBelowMinOrder ? (
                 <div className='bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold p-3 rounded-xl text-center flex items-center justify-center gap-1.5'>
                   <AlertCircle size={15} />
@@ -580,34 +750,236 @@ const CheckoutPage = () => {
                 </p>
               )}
 
-              <button
-                type='button'
-                onClick={handleOnlinePayment}
-                disabled={selectAddress === null || processing || cartItemsList.length === 0 || isBelowMinOrder}
-                className={`w-full py-3.5 px-4 rounded-xl text-white font-bold text-sm transition-all flex items-center justify-center gap-2 shadow-md cursor-pointer ${
-                  selectAddress === null || processing || cartItemsList.length === 0 || isBelowMinOrder
-                    ? 'bg-blue-300 cursor-not-allowed shadow-none'
-                    : 'bg-blue-600 hover:bg-blue-700 active:scale-[0.99] shadow-blue-500/20'
-                }`}
-              >
-                <CreditCard size={18} />
-                <span>{processing ? 'Processing...' : isBelowMinOrder ? 'Min Order ₹4,500 Required' : 'Pay Online (Stripe)'}</span>
-                <ArrowRight size={16} />
-              </button>
+              {/* Notice before placing order */}
+              <div className='bg-amber-50 border border-amber-300/80 rounded-2xl p-4 text-center shadow-xs'>
+                <p className='text-sm sm:text-base font-bold text-amber-950 leading-snug'>
+                  Submit your query using Confirm Order. After that, our team will contact you and update you.
+                </p>
+              </div>
 
-              <button
-                type='button'
-                onClick={handleCashOnDelivery}
-                disabled={selectAddress === null || processing || cartItemsList.length === 0 || isBelowMinOrder}
-                className={`w-full py-3.5 px-4 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 border cursor-pointer ${
-                  selectAddress === null || processing || cartItemsList.length === 0 || isBelowMinOrder
-                    ? 'border-gray-200 text-gray-400 bg-gray-50 cursor-not-allowed'
-                    : 'border-gray-200 text-gray-800 bg-white hover:bg-gray-50 active:scale-[0.99] shadow-2xs'
-                }`}
-              >
-                <Banknote size={18} />
-                <span>{processing ? 'Processing...' : isBelowMinOrder ? 'Min Order ₹4,500 Required' : 'Cash on Delivery'}</span>
-              </button>
+              {/* Confirm Order Button */}
+              <div>
+                <button
+                  type='button'
+                  onClick={handleConfirmUpiOrder}
+                  disabled={selectAddress === null || processing || cartItemsList.length === 0 || isBelowMinOrder}
+                  className={`w-full py-4 px-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-2 shadow-lg cursor-pointer ${
+                    selectAddress === null || processing || cartItemsList.length === 0 || isBelowMinOrder
+                      ? 'bg-orange-300/40 text-gray-400 cursor-not-allowed'
+                      : 'bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 hover:from-orange-600 hover:to-amber-600 text-white shadow-orange-500/30 active:scale-[0.99]'
+                  }`}
+                >
+                  {processing ? (
+                    <>
+                      <RefreshCw size={15} className='animate-spin' />
+                      <span>Placing Order...</span>
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle2 size={16} />
+                      <span>Confirm Order</span>
+                    </>
+                  )}
+                </button>
+
+                {isBelowMinOrder ? (
+                  <p className='text-[10px] text-rose-500 font-bold text-center mt-2'>
+                    Minimum order amount is ₹{MIN_ORDER_VALUE.toLocaleString('en-IN')}. Please add items worth ₹{amountToMinOrder.toLocaleString('en-IN')} more.
+                  </p>
+                ) : selectAddress === null && (
+                  <p className='text-[10px] text-rose-500 font-bold text-center mt-2'>
+                    Please select or add a delivery address above to proceed.
+                  </p>
+                )}
+              </div>
+
+              {/* ========================================================
+                  PAYMENT GATEWAYS & QR CODE (COMMENTED OUT AS REQUESTED)
+                  ========================================================
+                  The payment gateway QR code and payment proof upload have
+                  been commented out as requested. Customers now submit their
+                  query via "Confirm Order" and our team will contact them.
+              */}
+              {/*
+              <div className='bg-gradient-to-br from-slate-900 via-gray-900 to-indigo-950 text-white rounded-3xl p-5 sm:p-6 shadow-xl border border-white/10'>
+                <div className='flex items-center justify-between gap-2 border-b border-white/10 pb-4 mb-4'>
+                  <div className='flex items-center gap-2.5'>
+                    <div className='w-9 h-9 rounded-2xl bg-orange-500/20 border border-orange-500/40 flex items-center justify-center text-orange-400'>
+                      <QrCode size={19} />
+                    </div>
+                    <div>
+                      <h3 className='text-sm font-black uppercase tracking-wider text-white'>UPI QR Payment</h3>
+                      <p className='text-[10px] text-gray-400 font-medium'>Scan with any UPI app to pay</p>
+                    </div>
+                  </div>
+                  <span className='px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'>
+                    Fast & Direct
+                  </span>
+                </div>
+
+                <div className='bg-white/5 border border-white/10 rounded-2xl p-3 flex items-center justify-between mb-4'>
+                  <span className='text-xs text-gray-300 font-medium'>Amount to Pay Now:</span>
+                  <span className='text-lg font-black text-orange-400 tracking-tight'>
+                    ₹{grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </span>
+                </div>
+
+                <div className='mb-4'>
+                  <label className='block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2'>
+                    Choose Payment QR:
+                  </label>
+                  <div className='grid grid-cols-2 gap-2'>
+                    {upiOptions.map((opt) => {
+                      const isSelected = selectedQr === opt.id
+                      return (
+                        <button
+                          key={opt.id}
+                          type='button'
+                          onClick={() => setSelectedQr(opt.id)}
+                          className={`p-2.5 rounded-2xl border text-left transition-all cursor-pointer ${
+                            isSelected
+                              ? 'bg-orange-500/20 border-orange-500 text-white shadow-md'
+                              : 'bg-white/5 border-white/10 text-gray-400 hover:bg-white/10'
+                          }`}
+                        >
+                          <p className={`text-[11px] font-bold ${isSelected ? 'text-orange-400' : 'text-gray-300'}`}>
+                            {opt.name}
+                          </p>
+                          <p className='text-[9px] font-mono truncate mt-0.5 opacity-80'>{opt.upiId}</p>
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+
+                <div className='bg-white text-gray-900 rounded-2xl p-4 shadow-inner flex flex-col items-center'>
+                  <div className='relative w-56 max-w-full aspect-square bg-white rounded-xl overflow-hidden border-2 border-gray-100 shadow-sm flex items-center justify-center p-2'>
+                    <img
+                      src={activeQr.image}
+                      alt={activeQr.name}
+                      className='w-full h-full object-contain'
+                    />
+                  </div>
+
+                  <div className='w-full mt-3 bg-gray-50 border border-gray-200 rounded-xl p-2.5 flex items-center justify-between gap-2'>
+                    <div className='min-w-0 flex-1'>
+                      <p className='text-[9px] font-bold uppercase tracking-wider text-gray-400'>UPI ID</p>
+                      <p className='text-xs font-mono font-bold text-gray-800 truncate select-all'>
+                        {activeQr.upiId}
+                      </p>
+                    </div>
+                    <button
+                      type='button'
+                      onClick={() => handleCopyUpi(activeQr.upiId)}
+                      className='px-2.5 py-1.5 rounded-lg bg-orange-500 hover:bg-orange-600 active:scale-95 text-white text-[10px] font-bold flex items-center gap-1 transition-all cursor-pointer shrink-0'
+                    >
+                      {copiedUpi ? <Check size={12} /> : <Copy size={12} />}
+                      <span>{copiedUpi ? 'Copied' : 'Copy'}</span>
+                    </button>
+                  </div>
+
+                  <p className='text-[10px] text-gray-500 font-medium text-center mt-2.5'>
+                    Supported on Google Pay, PhonePe, Paytm, BHIM, Cred & Banking apps
+                  </p>
+                </div>
+
+                <div className='mt-5 pt-4 border-t border-white/10'>
+                  <div className='flex items-center justify-between mb-1.5'>
+                    <label className='text-xs font-black uppercase tracking-wider text-white flex items-center gap-1.5'>
+                      <span>Upload Payment Screenshot</span>
+                      <span className='text-rose-400 text-sm'>*</span>
+                    </label>
+                    {paymentScreenshot && (
+                      <span className='text-[10px] font-bold text-emerald-400 flex items-center gap-1'>
+                        <CheckCircle2 size={12} /> Ready
+                      </span>
+                    )}
+                  </div>
+                  <p className='text-[11px] text-gray-400 mb-3 leading-tight'>
+                    Upload the screenshot of your completed UPI transaction to unlock the Confirm Order button.
+                  </p>
+
+                  <input
+                    type='file'
+                    ref={fileInputRef}
+                    onChange={handleScreenshotUpload}
+                    accept='image/*'
+                    className='hidden'
+                    id='payment-screenshot-input'
+                  />
+
+                  {!paymentScreenshot && !uploadingScreenshot && (
+                    <label
+                      htmlFor='payment-screenshot-input'
+                      className='border-2 border-dashed border-white/20 hover:border-orange-500/60 bg-white/5 hover:bg-white/10 rounded-2xl p-4 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all group'
+                    >
+                      <div className='w-10 h-10 rounded-full bg-orange-500/20 text-orange-400 flex items-center justify-center group-hover:scale-110 transition-transform'>
+                        <UploadCloud size={20} />
+                      </div>
+                      <div className='text-center'>
+                        <p className='text-xs font-bold text-white group-hover:text-orange-400 transition-colors'>
+                          Tap to select payment screenshot
+                        </p>
+                        <p className='text-[10px] text-gray-400 mt-0.5'>Supports JPG, PNG, WEBP (Max 10MB)</p>
+                      </div>
+                    </label>
+                  )}
+
+                  {uploadingScreenshot && (
+                    <div className='border border-white/10 bg-white/5 rounded-2xl p-6 flex flex-col items-center justify-center gap-2'>
+                      <RefreshCw size={22} className='text-orange-400 animate-spin' />
+                      <p className='text-xs font-bold text-gray-300'>Attaching payment proof...</p>
+                    </div>
+                  )}
+
+                  {paymentScreenshot && !uploadingScreenshot && (
+                    <div className='bg-white/10 border border-emerald-500/50 rounded-2xl p-3 flex items-center justify-between gap-3'>
+                      <div className='flex items-center gap-3 min-w-0'>
+                        <img
+                          src={screenshotPreview || paymentScreenshot}
+                          alt='Payment Receipt'
+                          className='w-12 h-12 object-cover rounded-xl border border-white/20 shrink-0'
+                        />
+                        <div className='min-w-0'>
+                          <p className='text-xs font-bold text-emerald-300 flex items-center gap-1 truncate'>
+                            <CheckCircle2 size={13} /> Screenshot Attached
+                          </p>
+                          <p className='text-[10px] text-gray-400 truncate'>Confirm button unlocked!</p>
+                        </div>
+                      </div>
+                      <button
+                        type='button'
+                        onClick={handleRemoveScreenshot}
+                        className='text-[11px] font-bold text-gray-400 hover:text-rose-400 px-2.5 py-1 rounded-lg hover:bg-white/5 transition-colors cursor-pointer shrink-0'
+                      >
+                        Change
+                      </button>
+                    </div>
+                  )}
+
+                  <div className='mt-3'>
+                    <input
+                      type='text'
+                      placeholder='UPI Reference / UTR Number (Optional)'
+                      value={transactionId}
+                      onChange={(e) => setTransactionId(e.target.value)}
+                      className='w-full px-3.5 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-500 text-xs focus:outline-hidden focus:border-orange-500 transition-colors'
+                    />
+                  </div>
+                </div>
+
+                <div className='mt-5 pt-3'>
+                  <button
+                    type='button'
+                    onClick={handleConfirmUpiOrder}
+                    disabled={selectAddress === null || processing || cartItemsList.length === 0 || isBelowMinOrder}
+                    className='w-full py-4 px-4 rounded-2xl font-black text-xs uppercase tracking-widest bg-orange-500 text-white'
+                  >
+                    Confirm & Place Order
+                  </button>
+                </div>
+              </div>
+              */}
             </div>
 
           </div>

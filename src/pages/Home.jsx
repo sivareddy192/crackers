@@ -13,6 +13,7 @@ import { FaCrown, FaHeadset, FaLock, FaTruckFast } from "react-icons/fa6"
 import ProductBox from "../components/ProductBox"
 import AxiosToastError from "../utils/AxiosToastError"
 import { setAllCategory, setAllSubCategory } from "../store/productSlice"
+import { getApiCache, setApiCache } from "../utils/apiCache"
 
 const WelcomeOffersPopup = lazy(() => import("../components/WelcomeOffersPopup"))
 
@@ -20,8 +21,17 @@ const Home = () => {
   const categoryData = useSelector(state => state.product.allCategory)
   const user = useSelector(state => state.user)
 
-  const [homeFeed, setHomeFeed] = useState(null)
-  const [loadingHomeFeed, setLoadingHomeFeed] = useState(true)
+  const [homeFeed, setHomeFeed] = useState(() => {
+    const mem = getApiCache("home_feed")
+    if (mem) return mem
+    try {
+      const raw = localStorage.getItem("tracly_home_feed")
+      return raw ? JSON.parse(raw) : null
+    } catch {
+      return null
+    }
+  })
+  const [loadingHomeFeed, setLoadingHomeFeed] = useState(() => !homeFeed)
   const [activeProductFilter, setActiveProductFilter] = useState("all")
 
   const dispatch = useDispatch()
@@ -65,11 +75,28 @@ const Home = () => {
 
     const fetchHomeFeed = async () => {
       try {
-        const response = await Axios({ ...SummaryApi.getHomeFeed, signal: controller.signal })
-        const feed = response.data?.data
+        let feed = null
 
-        if (!response.data?.success || !feed) {
-          throw new Error(response.data?.message || "Unable to load homepage data.")
+        // Leverage early prefetch initiated in index.html if available
+        if (window.__TRACLY_PREFETCH__) {
+          try {
+            const prefetchData = await window.__TRACLY_PREFETCH__
+            window.__TRACLY_PREFETCH__ = null
+            if (prefetchData?.success && prefetchData?.data) {
+              feed = prefetchData.data
+            }
+          } catch {
+            window.__TRACLY_PREFETCH__ = null
+          }
+        }
+
+        if (!feed) {
+          const response = await Axios({ ...SummaryApi.getHomeFeed, signal: controller.signal })
+          feed = response.data?.data
+        }
+
+        if (!feed) {
+          throw new Error("Unable to load homepage data.")
         }
 
         if (!isMounted) return
@@ -78,12 +105,17 @@ const Home = () => {
         const subCategories = [...(feed.subCategories || [])].sort((a, b) => a.name.localeCompare(b.name))
         dispatch(setAllCategory(categories))
         dispatch(setAllSubCategory(subCategories))
-        setHomeFeed({ ...feed, categories, subCategories })
+        const finalFeed = { ...feed, categories, subCategories }
+        setHomeFeed(finalFeed)
+        setApiCache("home_feed", finalFeed, 300)
+        try {
+          localStorage.setItem("tracly_home_feed", JSON.stringify(finalFeed))
+        } catch {}
       } catch (error) {
         if (error?.code === "ERR_CANCELED" || !isMounted) return
 
         const recovered = await hydrateCatalogFallback()
-        if (!recovered && isMounted) AxiosToastError(error)
+        if (!recovered && isMounted && !homeFeed) AxiosToastError(error)
       } finally {
         if (isMounted) {
           setLoadingHomeFeed(false)
@@ -318,8 +350,8 @@ const Home = () => {
           {loadingHomeFeed && categoryData.length === 0 && new Array(6).fill(null).map((_, index) => (
             <div key={`featured-loading-${index}`} className="aspect-[1/1.3] w-full rounded-2xl bg-slate-100 animate-pulse" />
           ))}
-          {filteredProducts.slice(0, 6).map(product => (
-            <ProductBox key={product._id} data={product} />
+          {filteredProducts.slice(0, 6).map((product, index) => (
+            <ProductBox key={product._id} data={product} priority={index < 4} />
           ))}
         </div>
         {!loadingHomeFeed && filteredProducts.length === 0 && (

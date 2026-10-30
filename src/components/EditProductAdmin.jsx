@@ -580,8 +580,8 @@ const EditProductAdmin = ({ close, data: propsData, fetchProductData }) => {
                             </button>
                         </div>
                         <textarea
-                            placeholder={`Enter ${k}`}
-                            rows={3}
+                            placeholder={`Enter ${k} (e.g. 1) Product Name: ... 2) Quantity: ... or each point on a new line)`}
+                            rows={4}
                             value={data.more_details[k]}
                             onChange={(e) => {
                             setData(prev => ({
@@ -589,8 +589,11 @@ const EditProductAdmin = ({ close, data: propsData, fetchProductData }) => {
                                 more_details: { ...prev.more_details, [k]: e.target.value }
                             }))
                             }}
-                            className='w-full bg-gray-50 border border-gray-100 p-3 rounded-2xl outline-none focus:border-indigo-500 font-bold text-xs resize-none'
+                            className='w-full bg-gray-50 border border-gray-100 p-3 rounded-2xl outline-none focus:border-indigo-500 font-bold text-xs resize-y'
                         />
+                        <p className='text-[10px] text-gray-400 font-medium px-1'>
+                            Tip: Enter each specification on a new line or as numbered points (e.g. 1) ..., 2) ...)
+                        </p>
                     </div>
                 ))}
             </div>
