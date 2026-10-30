@@ -91,6 +91,14 @@ const ProductCatalog = () => {
   }, [fetchProducts])
 
   useEffect(() => {
+    const handleInvalidate = () => {
+      fetchProducts()
+    }
+    window.addEventListener("tracly:catalog_invalidated", handleInvalidate)
+    return () => window.removeEventListener("tracly:catalog_invalidated", handleInvalidate)
+  }, [fetchProducts])
+
+  useEffect(() => {
     setProducts([])
     setPage(1)
     setFilters(previous => (

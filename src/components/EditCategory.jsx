@@ -5,6 +5,7 @@ import Axios from '../utils/Axios';
 import SummaryApi from '../common/SummaryApi';
 import toast from 'react-hot-toast'
 import AxiosToastError from '../utils/AxiosToastError';
+import { invalidateClientCatalog } from '../utils/apiCache';
 
 const EditCategory = ({ close, fetchData, data: CategoryData }) => {
 
@@ -32,17 +33,22 @@ const EditCategory = ({ close, fetchData, data: CategoryData }) => {
     try {
       setLoading(true)
       const response = await uploadImage(file)
-      const { data: ImageResponse } = response
+      const imageUrl = response?.data?.data?.url || response?.data?.data
+
+      if (!imageUrl) {
+        throw new Error(response?.data?.message || "Failed to upload category image")
+      }
 
       setData(prev => ({
         ...prev,
-        image: ImageResponse?.data || ""
+        image: imageUrl
       }))
 
     } catch (error) {
       AxiosToastError(error)
     } finally {
       setLoading(false)
+      if (e.target) e.target.value = ""
     }
   }
 
@@ -63,6 +69,7 @@ const EditCategory = ({ close, fetchData, data: CategoryData }) => {
 
       if (responseData.success) {
         toast.success(responseData.message)
+        invalidateClientCatalog()
         if (fetchData) {
           fetchData(responseData.data);
         }

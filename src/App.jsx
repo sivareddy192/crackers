@@ -93,6 +93,44 @@ function App() {
     fetchCatalogMetadata()
   }, [categoryData.length, dispatch, location.pathname, subCategoryData.length]);
 
+  useEffect(() => {
+    const handleInvalidate = async () => {
+      try {
+        const [categoryResult, subCategoryResult] = await Promise.allSettled([
+          Axios({
+            ...SummaryApi.getCategory,
+            params: { t: Date.now() },
+            headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }
+          }),
+          Axios({
+            ...SummaryApi.getSubCategory,
+            params: { t: Date.now() },
+            headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }
+          })
+        ]);
+
+        if (categoryResult.status === "fulfilled" && categoryResult.value.data?.success) {
+          const categories = [...(categoryResult.value.data.data || [])]
+            .sort((a, b) => a.name.localeCompare(b.name));
+          dispatch(setAllCategory(categories));
+        }
+
+        if (subCategoryResult.status === "fulfilled" && subCategoryResult.value.data?.success) {
+          const subCategories = [...(subCategoryResult.value.data.data || [])]
+            .sort((a, b) => a.name.localeCompare(b.name));
+          dispatch(setAllSubCategory(subCategories));
+        }
+      } catch (e) {
+        console.error("Error refreshing catalog on invalidation:", e);
+      }
+    };
+
+    window.addEventListener("tracly:catalog_invalidated", handleInvalidate);
+    return () => {
+      window.removeEventListener("tracly:catalog_invalidated", handleInvalidate);
+    };
+  }, [dispatch]);
+
   if (isAdmin(user?.role)) {
     return <Navigate to="/admin-portal/dashboard" replace />
   }

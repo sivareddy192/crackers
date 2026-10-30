@@ -33,17 +33,22 @@ const UploadFestivalOffer = ({ close, fetchData }) => {
     try {
       setUploading(true);
       const response = await uploadImage(file);
-      const { data: ImageResponse } = response;
+      const imageUrl = response?.data?.data?.url || response?.data?.data;
+
+      if (!imageUrl) {
+        throw new Error(response?.data?.message || "Failed to upload festival image");
+      }
 
       setData(prev => ({
         ...prev,
-        image: ImageResponse?.data || ""
+        image: imageUrl
       }));
       toast.success("Festival image uploaded successfully");
     } catch (error) {
       AxiosToastError(error);
     } finally {
       setUploading(false);
+      if (e.target) e.target.value = "";
     }
   };
 

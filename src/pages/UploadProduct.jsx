@@ -18,6 +18,7 @@ import ViewVideo from "../components/ViewVideo";
 import { getImageUrl } from "../utils/getImageUrl";
 import { FaVideo } from "react-icons/fa";
 import { getDiscountPercent } from "../utils/PriceWithDiscount";
+import { invalidateClientCatalog } from "../utils/apiCache";
 
 const UploadProduct = () => {
   const dispatch = useDispatch();
@@ -58,37 +59,43 @@ const UploadProduct = () => {
   const [viewVideoURL, setViewVideoURL] = useState("");
 
   useEffect(() => {
-    const fetchCategories = async () => {
+    const fetchCatalogData = async () => {
       try {
-        if (!allCategory || allCategory.length === 0) {
-          const response = await Axios({ ...SummaryApi.getCategory });
-          const { data: res } = response;
-          if (res.success) {
-            dispatch(setAllCategory(res.data));
-          }
+        const [catRes, subRes] = await Promise.all([
+          Axios({
+            ...SummaryApi.getCategory,
+            params: { t: Date.now() },
+            headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }
+          }),
+          Axios({
+            ...SummaryApi.getSubCategory,
+            params: { t: Date.now() },
+            headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }
+          })
+        ]);
+
+        if (catRes.data?.success) {
+          dispatch(setAllCategory(catRes.data.data || []));
+        }
+        if (subRes.data?.success) {
+          dispatch(setAllSubCategory(subRes.data.data || []));
         }
       } catch (error) {
         AxiosToastError(error);
       }
     };
 
-    const fetchSubCategories = async () => {
-      try {
-        if (!allSubCategory || allSubCategory.length === 0) {
-          const response = await Axios({ ...SummaryApi.getSubCategory });
-          const { data: res } = response;
-          if (res.success) {
-            dispatch(setAllSubCategory(res.data));
-          }
-        }
-      } catch (error) {
-        AxiosToastError(error);
-      }
+    fetchCatalogData();
+
+    const handleInvalidate = () => {
+      fetchCatalogData();
     };
 
-    fetchCategories();
-    fetchSubCategories();
-  }, [dispatch, allCategory, allSubCategory]);
+    window.addEventListener("tracly:catalog_invalidated", handleInvalidate);
+    return () => {
+      window.removeEventListener("tracly:catalog_invalidated", handleInvalidate);
+    };
+  }, [dispatch]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -105,8 +112,11 @@ const UploadProduct = () => {
     setImageLoading(true);
     try {
       const response = await uploadImage(file);
-      const { data: ImageResponse } = response;
-      const imageUrl = ImageResponse.data;
+      const imageUrl = response?.data?.data?.url || response?.data?.data;
+
+      if (!imageUrl) {
+        throw new Error(response?.data?.message || "Failed to upload image");
+      }
 
       setData((prev) => ({
         ...prev,
@@ -116,6 +126,7 @@ const UploadProduct = () => {
       AxiosToastError(error);
     } finally {
       setImageLoading(false);
+      if (e.target) e.target.value = "";
     }
   };
 
@@ -135,8 +146,11 @@ const UploadProduct = () => {
     setVideoLoading(true);
     try {
       const response = await uploadVideo(file);
-      const { data: videoResponse } = response;
-      const videoUrl = videoResponse.data;
+      const videoUrl = response?.data?.data?.url || response?.data?.data;
+
+      if (!videoUrl) {
+        throw new Error(response?.data?.message || "Failed to upload video");
+      }
 
       setData((prev) => ({
         ...prev,
@@ -146,6 +160,7 @@ const UploadProduct = () => {
       AxiosToastError(error);
     } finally {
       setVideoLoading(false);
+      if (e.target) e.target.value = "";
     }
   };
 
@@ -260,6 +275,7 @@ const UploadProduct = () => {
       const { data: responseData } = response;
       if (responseData.success) {
         successAlert(responseData.message);
+        invalidateClientCatalog();
         setData({
           name: "",
           image: [],

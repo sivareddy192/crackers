@@ -17,6 +17,7 @@ import uploadVideo from '../utils/UploadVideo'
 import ViewVideo from '../components/ViewVideo'
 import { FaVideo } from 'react-icons/fa'
 import { getDiscountPercent } from '../utils/PriceWithDiscount'
+import { invalidateClientCatalog } from '../utils/apiCache'
 
 const EditProductAdmin = ({ close, data: propsData, fetchProductData }) => {
   const dispatch = useDispatch()
@@ -72,20 +73,30 @@ const EditProductAdmin = ({ close, data: propsData, fetchProductData }) => {
     const loadData = async () => {
       try {
         const [cat, sub] = await Promise.all([
-          Axios({ ...SummaryApi.getAllCategory }),
-          Axios({ ...SummaryApi.getAllSubCategory })
+          Axios({
+            ...SummaryApi.getCategory,
+            params: { t: Date.now() },
+            headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }
+          }),
+          Axios({
+            ...SummaryApi.getSubCategory,
+            params: { t: Date.now() },
+            headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }
+          })
         ])
-        dispatch(setAllCategory(cat.data?.data || []))
-        dispatch(setAllSubCategory(sub.data?.data || []))
+        if (cat.data?.success) {
+          dispatch(setAllCategory(cat.data.data || []))
+        }
+        if (sub.data?.success) {
+          dispatch(setAllSubCategory(sub.data.data || []))
+        }
       } catch (err) {
         AxiosToastError(err)
       }
     }
 
-    if (!allCategory.length || !allSubCategory.length) {
-      loadData()
-    }
-  }, [dispatch, allCategory.length, allSubCategory.length])
+    loadData()
+  }, [dispatch])
 
   useEffect(() => {
     if (!propsData) return
@@ -109,14 +120,16 @@ const EditProductAdmin = ({ close, data: propsData, fetchProductData }) => {
     setImageLoading(true)
     try {
       const response = await uploadImage(file)
-      const url = response?.data?.data
-      if (url) {
-        setData(prev => ({ ...prev, image: [...prev.image, url] }))
+      const url = response?.data?.data?.url || response?.data?.data
+      if (!url) {
+        throw new Error(response?.data?.message || "Failed to upload image")
       }
+      setData(prev => ({ ...prev, image: [...prev.image, url] }))
     } catch (err) {
       AxiosToastError(err)
     } finally {
       setImageLoading(false)
+      if (e.target) e.target.value = ""
     }
   }
 
@@ -133,14 +146,16 @@ const EditProductAdmin = ({ close, data: propsData, fetchProductData }) => {
     setVideoLoading(true)
     try {
       const response = await uploadVideo(file)
-      const url = response?.data?.data
-      if (url) {
-        setData(prev => ({ ...prev, video: url }))
+      const url = response?.data?.data?.url || response?.data?.data
+      if (!url) {
+        throw new Error(response?.data?.message || "Failed to upload video")
       }
+      setData(prev => ({ ...prev, video: url }))
     } catch (err) {
       AxiosToastError(err)
     } finally {
       setVideoLoading(false)
+      if (e.target) e.target.value = ""
     }
   }
 
@@ -229,6 +244,7 @@ const EditProductAdmin = ({ close, data: propsData, fetchProductData }) => {
 
       if (response.data?.success) {
         successAlert("Product Updated Successfully!")
+        invalidateClientCatalog()
         close()
         fetchProductData()
       }

@@ -73,3 +73,40 @@ export const clearApiCache = (prefix = "") => {
   } catch {}
 };
 
+/**
+ * Completely invalidates client caches across memory, sessionStorage, and localStorage,
+ * and notifies active components to re-sync immediately.
+ */
+export const invalidateClientCatalog = () => {
+  memoryCache.clear();
+
+  try {
+    Object.keys(sessionStorage).forEach((k) => {
+      if (
+        k.startsWith("tracly_cache_") ||
+        k.startsWith("trace_p_") ||
+        k.startsWith("tracly_cached_")
+      ) {
+        sessionStorage.removeItem(k);
+      }
+    });
+  } catch {}
+
+  try {
+    localStorage.removeItem("tracly_home_feed");
+    localStorage.removeItem("tracly_categories");
+    localStorage.removeItem("tracly_subcategories");
+    localStorage.removeItem("tracly_lcp_banner");
+    Object.keys(localStorage).forEach((k) => {
+      if (k.startsWith("trace_p_")) {
+        localStorage.removeItem(k);
+      }
+    });
+  } catch {}
+
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new CustomEvent("tracly:catalog_invalidated"));
+  }
+};
+
+

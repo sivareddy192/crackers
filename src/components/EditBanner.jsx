@@ -34,17 +34,22 @@ const EditBanner = ({ close, fetchData, data: editData }) => {
       setLoading(true);
       setUploadingField(field);
       const response = await uploadImage(file);
-      const { data: ImageResponse } = response;
+      const imageUrl = response?.data?.data?.url || response?.data?.data;
+
+      if (!imageUrl) {
+        throw new Error(response?.data?.message || "Failed to upload banner image");
+      }
 
       setData(prev => ({
         ...prev,
-        [field]: ImageResponse?.data || ""
+        [field]: imageUrl
       }));
     } catch (error) {
       AxiosToastError(error);
     } finally {
       setLoading(false);
       setUploadingField("");
+      if (e.target) e.target.value = "";
     }
   };
 

@@ -6,6 +6,7 @@ import Axios from '../utils/Axios'
 import AxiosToastError from '../utils/AxiosToastError'
 import { getImageUrl } from '../utils/getImageUrl'
 import toast from 'react-hot-toast'
+import { invalidateClientCatalog } from '../utils/apiCache'
 
 
 const AdminProduct = ({ data = {}, fetchProductData }) => {
@@ -33,6 +34,7 @@ const AdminProduct = ({ data = {}, fetchProductData }) => {
 
       if (responseData?.success) {
         toast.success(responseData.message)
+        invalidateClientCatalog()
         fetchProductData && fetchProductData()
         setOpenDelete(false)
       }

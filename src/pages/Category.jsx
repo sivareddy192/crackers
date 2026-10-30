@@ -11,6 +11,7 @@ import ConfirmBox from '../components/ConfirmBox'
 import toast from 'react-hot-toast'
 import AxiosToastError from '../utils/AxiosToastError'
 import { getImageUrl } from '../utils/getImageUrl'
+import { invalidateClientCatalog } from '../utils/apiCache'
 
 const CategoryPage = () => {
     const dispatch = useDispatch()
@@ -76,8 +77,10 @@ const CategoryPage = () => {
 
         try {
             // Optimistically remove from UI and Redux immediately
+            const updated = categoryData.filter(c => c._id !== targetId);
             setCategoryData(prev => prev.filter(c => c._id !== targetId));
-            dispatch(setAllCategory(categoryData.filter(c => c._id !== targetId)));
+            dispatch(setAllCategory(updated));
+            invalidateClientCatalog();
             setOpenConfirmBoxDelete(false);
 
             const response = await Axios({
@@ -90,6 +93,7 @@ const CategoryPage = () => {
 
             if (responseData.success) {
                 toast.success(responseData.message || "Category deleted successfully");
+                invalidateClientCatalog();
                 fetchCategory();
             } else {
                 toast.error(responseData.message || "Failed to delete category");

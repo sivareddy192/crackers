@@ -1,12 +1,16 @@
 import React, { useEffect, useState } from 'react'
 import { IoClose } from "react-icons/io5"
+import { useDispatch } from 'react-redux'
 import uploadImage from '../utils/UploadImage'
 import Axios from '../utils/Axios'
 import SummaryApi from '../common/SummaryApi'
 import toast from 'react-hot-toast'
 import AxiosToastError from '../utils/AxiosToastError'
+import { setAllSubCategory } from '../store/productSlice'
+import { invalidateClientCatalog } from '../utils/apiCache'
 
 const UploadSubCategoryModel = ({ close, fetchData }) => {
+  const dispatch = useDispatch()
   const [subCategoryData, setSubCategoryData] = useState({
     name: "",
     image: "",
@@ -18,10 +22,15 @@ const UploadSubCategoryModel = ({ close, fetchData }) => {
   useEffect(() => {
     const fetchAllCategories = async () => {
       try {
-        const response = await Axios({ ...SummaryApi.getCategory })
+        const response = await Axios({
+          ...SummaryApi.getCategory,
+          params: { t: Date.now() },
+          headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }
+        })
         const { data: responseData } = response
         if (responseData.success) {
-          setAllCategory(responseData.data)
+          const valid = (responseData.data || []).filter(c => c && c._id && c.name)
+          setAllCategory(valid)
         }
       } catch (error) {
         AxiosToastError(error)
@@ -52,13 +61,23 @@ const UploadSubCategoryModel = ({ close, fetchData }) => {
   const handleUploadSubCategoryImage = async (e) => {
     const file = e.target.files[0]
     if (!file) return
-    const response = await uploadImage(file)
-    const { data: ImageResponse } = response
+    try {
+      const response = await uploadImage(file)
+      const imageUrl = response?.data?.data?.url || response?.data?.data
 
-    setSubCategoryData(prev => ({
-      ...prev,
-      image: ImageResponse.data
-    }))
+      if (!imageUrl) {
+        throw new Error(response?.data?.message || "Failed to upload image")
+      }
+
+      setSubCategoryData(prev => ({
+        ...prev,
+        image: imageUrl
+      }))
+    } catch (error) {
+      AxiosToastError(error)
+    } finally {
+      if (e.target) e.target.value = ""
+    }
   }
 
   const handleRemoveCategorySelected = (categoryId) => {
@@ -79,6 +98,20 @@ const UploadSubCategoryModel = ({ close, fetchData }) => {
 
       if (responseData.success) {
         toast.success(responseData.message)
+        invalidateClientCatalog()
+
+        // Fetch fresh subcategories and sync Redux store
+        try {
+          const freshSub = await Axios({
+            ...SummaryApi.getSubCategory,
+            params: { t: Date.now() },
+            headers: { 'Cache-Control': 'no-cache' }
+          })
+          if (freshSub.data?.success) {
+            dispatch(setAllSubCategory(freshSub.data.data))
+          }
+        } catch {}
+
         close && close()
         fetchData && fetchData()
       }

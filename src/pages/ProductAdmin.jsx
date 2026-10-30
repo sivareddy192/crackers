@@ -19,6 +19,8 @@ const ProductAdmin = () => {
       setLoading(true)
       const response = await Axios({
         ...SummaryApi.getProduct,
+        params: { t: Date.now() },
+        headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' },
         data: {
           page: page,
           limit: 12,
@@ -43,6 +45,14 @@ const ProductAdmin = () => {
   useEffect(() => {
     fetchProductData()
   }, [page])
+
+  useEffect(() => {
+    const handleInvalidate = () => {
+      fetchProductData()
+    }
+    window.addEventListener("tracly:catalog_invalidated", handleInvalidate)
+    return () => window.removeEventListener("tracly:catalog_invalidated", handleInvalidate)
+  }, [])
 
   const handleNext = () => {
     if (page < totalPageCount) setPage(prev => prev + 1)

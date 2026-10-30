@@ -73,12 +73,12 @@ const Home = () => {
       return recovered
     }
 
-    const fetchHomeFeed = async () => {
+    const fetchHomeFeed = async (forceFresh = false) => {
       try {
         let feed = null
 
         // Leverage early prefetch initiated in index.html if available
-        if (window.__TRACLY_PREFETCH__) {
+        if (!forceFresh && window.__TRACLY_PREFETCH__) {
           try {
             const prefetchData = await window.__TRACLY_PREFETCH__
             window.__TRACLY_PREFETCH__ = null
@@ -91,7 +91,15 @@ const Home = () => {
         }
 
         if (!feed) {
-          const response = await Axios({ ...SummaryApi.getHomeFeed, signal: controller.signal })
+          const reqConfig = {
+            ...SummaryApi.getHomeFeed,
+            signal: controller.signal
+          }
+          if (forceFresh) {
+            reqConfig.params = { t: Date.now() }
+            reqConfig.headers = { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }
+          }
+          const response = await Axios(reqConfig)
           feed = response.data?.data
         }
 
@@ -124,9 +132,17 @@ const Home = () => {
     }
 
     fetchHomeFeed()
+
+    const handleCatalogInvalidated = () => {
+      fetchHomeFeed(true)
+    }
+
+    window.addEventListener("tracly:catalog_invalidated", handleCatalogInvalidated)
+
     return () => {
       isMounted = false
       controller.abort()
+      window.removeEventListener("tracly:catalog_invalidated", handleCatalogInvalidated)
     }
   }, [dispatch])
 

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useDispatch } from 'react-redux';
 import UploadSubCategory from '../components/UploadSubCategory';
 import AxiosToastError from '../utils/AxiosToastError';
 import Axios from '../utils/Axios';
@@ -13,9 +14,11 @@ import ConfirmBox from '../components/ConfirmBox';
 import toast from 'react-hot-toast';
 import { getImageUrl } from '../utils/getImageUrl';
 import Loading from '../components/Loading';
+import { setAllSubCategory } from '../store/productSlice';
+import { invalidateClientCatalog } from '../utils/apiCache';
 
 const SubCategoryPage = () => {
-
+  const dispatch = useDispatch();
   const [openAddSubCategory, setOpenAddSubCategory] = useState(false);
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -41,6 +44,7 @@ const SubCategoryPage = () => {
 
       if (responseData.success) {
         setData(responseData.data);
+        dispatch(setAllSubCategory(responseData.data));
       }
     } catch (error) {
       AxiosToastError(error);
@@ -133,7 +137,10 @@ const SubCategoryPage = () => {
 
     try {
       // Optimistic update
-      setData(prev => prev.filter(s => s._id !== targetId));
+      const updated = data.filter(s => s._id !== targetId);
+      setData(updated);
+      dispatch(setAllSubCategory(updated));
+      invalidateClientCatalog();
       setOpenDeleteConfirmBox(false);
 
       const response = await Axios({
@@ -146,6 +153,7 @@ const SubCategoryPage = () => {
 
       if (responseData.success) {
         toast.success(responseData.message || "Subcategory deleted successfully");
+        invalidateClientCatalog();
         fetchSubCategory();
         setDeleteSubCategory({ _id: "" });
       } else {

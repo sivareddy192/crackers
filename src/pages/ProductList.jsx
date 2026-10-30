@@ -67,8 +67,16 @@ const ProductList = () => {
   }, [page, params])
 
   useEffect(() => {
+    const handleInvalidate = () => {
+      fetchProductdata()
+    }
+    window.addEventListener("tracly:catalog_invalidated", handleInvalidate)
+    return () => window.removeEventListener("tracly:catalog_invalidated", handleInvalidate)
+  }, [])
+
+  useEffect(() => {
     const sub = AllSubCategory.filter(s =>
-      s.category.some(el => el._id === categoryId)
+      Array.isArray(s.category) && s.category.some(el => el && el._id === categoryId)
     )
     setDisplaySubCategory(sub)
   }, [AllSubCategory, params])
@@ -87,7 +95,9 @@ const ProductList = () => {
         <div className='bg-white overflow-y-auto h-full border-r border-gray-100 no-scrollbar'>
             <div className='flex flex-col'>
                 {DisplaySubCategory.map((s, idx) => {
-                    const link = `/${valideURLConvert(s?.category[0]?.name)}-${s?.category[0]?._id}/${valideURLConvert(s.name)}-${s._id}`
+                    const catName = s?.category?.[0]?.name || "category";
+                    const catId = s?.category?.[0]?._id || categoryId;
+                    const link = `/${valideURLConvert(catName)}-${catId}/${valideURLConvert(s.name)}-${s._id}`
                     const isActive = subCategoryId === s._id;
                     return (
                         <Link

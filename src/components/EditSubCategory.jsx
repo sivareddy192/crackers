@@ -6,14 +6,15 @@ import Axios from '../utils/Axios';
 import SummaryApi from '../common/SummaryApi';
 import toast from 'react-hot-toast';
 import AxiosToastError from '../utils/AxiosToastError';
-import { setAllCategory } from '../store/productSlice';
+import { setAllCategory, setAllSubCategory } from '../store/productSlice';
+import { invalidateClientCatalog } from '../utils/apiCache';
 
 const EditSubCategory = ({ close, data, fetchData }) => {
   const [subCategoryData, setSubCategoryData] = useState({
     _id: data._id,
     name: data.name,
     image: data.image,
-    category: data.category || []
+    category: (data.category || []).filter(Boolean)
   });
 
   const dispatch = useDispatch();
@@ -22,19 +23,22 @@ const EditSubCategory = ({ close, data, fetchData }) => {
   useEffect(() => {
     const fetchAllCategories = async () => {
       try {
-        if (!allCategory || allCategory.length === 0) {
-          const response = await Axios({ ...SummaryApi.getCategory });
-          const { data: responseData } = response;
-          if (responseData.success) {
-            dispatch(setAllCategory(responseData.data));
-          }
+        const response = await Axios({
+          ...SummaryApi.getCategory,
+          params: { t: Date.now() },
+          headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }
+        });
+        const { data: responseData } = response;
+        if (responseData.success) {
+          const valid = (responseData.data || []).filter(c => c && c._id && c.name);
+          dispatch(setAllCategory(valid));
         }
       } catch (error) {
         AxiosToastError(error);
       }
     };
     fetchAllCategories();
-  }, [allCategory, dispatch]);
+  }, [dispatch]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -45,13 +49,23 @@ const EditSubCategory = ({ close, data, fetchData }) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    const response = await uploadImage(file);
-    const { data: ImageResponse } = response;
+    try {
+      const response = await uploadImage(file);
+      const imageUrl = response?.data?.data?.url || response?.data?.data;
 
-    setSubCategoryData(prev => ({
-      ...prev,
-      image: ImageResponse.data
-    }));
+      if (!imageUrl) {
+        throw new Error(response?.data?.message || "Failed to upload image");
+      }
+
+      setSubCategoryData(prev => ({
+        ...prev,
+        image: imageUrl
+      }));
+    } catch (error) {
+      AxiosToastError(error);
+    } finally {
+      if (e.target) e.target.value = "";
+    }
   };
 
   const handleRemoveCategorySelected = (categoryId) => {
@@ -71,6 +85,19 @@ const EditSubCategory = ({ close, data, fetchData }) => {
       const { data: responseData } = response;
       if (responseData.success) {
         toast.success(responseData.message);
+        invalidateClientCatalog();
+
+        try {
+          const freshSub = await Axios({
+            ...SummaryApi.getSubCategory,
+            params: { t: Date.now() },
+            headers: { 'Cache-Control': 'no-cache' }
+          });
+          if (freshSub.data?.success) {
+            dispatch(setAllSubCategory(freshSub.data.data));
+          }
+        } catch {}
+
         if (close) close();
         if (fetchData) fetchData();
       }
